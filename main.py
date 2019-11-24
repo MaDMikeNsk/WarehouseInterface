@@ -18,12 +18,13 @@ c) менять диапазон времени для графиков -  ме�
 import tkinter as tk
 from tkinter import ttk
 from tkinter import font
-from src.AddUserWindow import AddUserWindow
+from src.AddUser import AddUser
 
 
 class Main(tk.Frame):
     def __init__(self, root):
         super().__init__(root)
+        self.root = root
         self.menu_bar = menu_bar
         self.init_main()
 
@@ -45,8 +46,9 @@ class Main(tk.Frame):
         label_total_goods = tk.Label(text='Куплено за месяц ', font=('Adobe Clean Light', 15, 'italic'))
         label_total_goods.place(x=20, y=570)
 
-        self.combobox_month = ttk.Combobox(values=['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль',
-                                                   'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'], width=12)
+        month = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+        self.combobox_month = ttk.Combobox(values=month, width=10)
         self.combobox_month.current(0)
         self.combobox_month.place(x=170, y=577)
 
@@ -61,7 +63,7 @@ class Main(tk.Frame):
         button_show.place(x=505, y=300)
 
         # Кнопки под ЛЕВОЙ таблицей
-        button_add_user = tk.Button(text='Добавить клиента')
+        button_add_user = tk.Button(text='Добавить клиента', command=lambda: AddUser(self.root))
         button_add_user.place(x=20, y=420)
 
         button_edit_user = tk.Button(text='Редактировать')
@@ -127,7 +129,7 @@ class Main(tk.Frame):
         self.menu_bar.add_cascade(label='Файл', menu=file_menu)
 
         edit_menu = tk.Menu(self.menu_bar, tearoff=0)
-        edit_menu.add_command(label='Добавить клиента', command=lambda: AddUserWindow())
+        edit_menu.add_command(label='Добавить клиента', command=lambda: AddUser(self.root))
         edit_menu.add_command(label='Добавить товар')
         edit_menu.add_command(label='Редактировать')
         self.menu_bar.add_cascade(label='Редактировать', menu=edit_menu)
@@ -141,16 +143,19 @@ class Main(tk.Frame):
         self.quit()
 
 
-if __name__ == "__main__":
-    parent = tk.Tk()
 
-    menu_bar = tk.Menu(parent)
-    parent.config(menu=menu_bar)
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+
+    menu_bar = tk.Menu(root)
+    root.config(menu=menu_bar)
     #db = DatabaseEngine()
 
-    app = Main(parent)
+    app = Main(root)
     app.pack()
-    parent.title("Warehouse Interface")
-    parent.geometry("1000x800+400+100")
-    parent.resizable(False, False)
-    parent.mainloop()
+    root.title("Warehouse Interface")
+    root.geometry("1000x800+400+100")
+    root.resizable(False, False)
+    root.mainloop()
