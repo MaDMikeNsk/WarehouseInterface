@@ -18,7 +18,8 @@ c) менять диапазон времени для графиков -  ме�
 import tkinter as tk
 from tkinter import ttk
 from tkinter import font
-from src.AddUser import AddUser
+from src.TableItems import User, Goods
+from src.DatabaseEngine import DatabaseEngine
 
 
 class Main(tk.Frame):
@@ -27,8 +28,7 @@ class Main(tk.Frame):
         self.root = root
         self.menu_bar = menu_bar
         self.init_main()
-
-        # self.db = db
+        self.db = db
         # self.view_records()
 
     def init_main(self):
@@ -54,16 +54,16 @@ class Main(tk.Frame):
 
         # Кнопки
         button_show = tk.Button(text='Отобразить данные')
-        button_show.place(x=505, y=100)
+        button_show.place(x=515, y=100)
 
         button_show = tk.Button(text='График')
-        button_show.place(x=505, y=200)
+        button_show.place(x=515, y=200)
 
         button_show = tk.Button(text='Диаграмма')
-        button_show.place(x=505, y=300)
+        button_show.place(x=515, y=300)
 
         # Кнопки под ЛЕВОЙ таблицей
-        button_add_user = tk.Button(text='Добавить клиента', command=lambda: AddUser(self.root))
+        button_add_user = tk.Button(text='Добавить клиента', command=lambda: User(self.root))
         button_add_user.place(x=20, y=420)
 
         button_edit_user = tk.Button(text='Редактировать')
@@ -73,7 +73,7 @@ class Main(tk.Frame):
         button_delete_user.place(x=300, y=420)
 
         # Кнопки под ПРАВОЙ таблицей
-        button_add_goods = tk.Button(text='Добавить товар')
+        button_add_goods = tk.Button(text='Добавить товар', command=lambda: Goods(self.root))
         button_add_goods.place(x=650, y=420)
 
         button_edit_goods = tk.Button(text='Редактировать')
@@ -90,7 +90,7 @@ class Main(tk.Frame):
         tree_users.column("ID", width=45, anchor=tk.CENTER)
         tree_users.column("last_name", width=180, anchor=tk.CENTER)
         tree_users.column("first_name", width=150, anchor=tk.CENTER)
-        tree_users.column("birthday", width=90, anchor=tk.CENTER)
+        tree_users.column("birthday", width=100, anchor=tk.CENTER)
 
         tree_users.heading("ID", text='ID')
         tree_users.heading("last_name", text='Фамилия')
@@ -108,15 +108,15 @@ class Main(tk.Frame):
         frame_goods = tk.Frame()
         frame_goods.place(x=650, y=80)
 
-        tree_goods = ttk.Treeview(frame_goods, columns=('ID', 'user_ID', 'month', 'goods'),
+        tree_goods = ttk.Treeview(frame_goods, columns=('ID', 'user_id', 'month', 'goods'),
                                   height=15, show='headings', selectmode='extended')
         tree_goods.column("ID", width=40, anchor=tk.CENTER)
-        tree_goods.column("user_ID", width=70, anchor=tk.CENTER)
+        tree_goods.column("user_id", width=70, anchor=tk.CENTER)
         tree_goods.column("month", width=100, anchor=tk.CENTER)
         tree_goods.column("goods", width=100, anchor=tk.CENTER)
 
         tree_goods.heading("ID", text='ID')
-        tree_goods.heading("user_ID", text='ID Клиента')
+        tree_goods.heading("user_id", text='ID Клиента')
         tree_goods.heading("month", text='Месяц')
         tree_goods.heading("goods", text='Товар')
         tree_goods.pack(side='left')
@@ -130,7 +130,7 @@ class Main(tk.Frame):
 
         edit_menu = tk.Menu(self.menu_bar, tearoff=0)
         edit_menu.add_command(label='Добавить клиента', command=lambda: AddUser(self.root))
-        edit_menu.add_command(label='Добавить товар')
+        edit_menu.add_command(label='Добавить товар', command=lambda: AddGoods(self.root))
         edit_menu.add_command(label='Редактировать')
         self.menu_bar.add_cascade(label='Редактировать', menu=edit_menu)
 
@@ -139,11 +139,15 @@ class Main(tk.Frame):
         graphic_menu.add_command(label='Диаграмма товаров')
         self.menu_bar.add_cascade(label='График', menu=graphic_menu)
 
+        help_menu = tk.Menu(self.menu_bar, tearoff=0)
+        help_menu.add_command(label='О программе')
+        self.menu_bar.add_cascade(label='Справка', menu=help_menu)
+
     def on_exit(self):
         self.quit()
 
-
-
+    def insert_user(self):
+        pass
 
 
 if __name__ == "__main__":
@@ -151,7 +155,8 @@ if __name__ == "__main__":
 
     menu_bar = tk.Menu(root)
     root.config(menu=menu_bar)
-    #db = DatabaseEngine()
+
+    db = DatabaseEngine()
 
     app = Main(root)
     app.pack()
