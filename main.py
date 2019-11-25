@@ -27,13 +27,10 @@ class Main(tk.Frame):
         super().__init__(root)
         self.root = root
         self.menu_bar = menu_bar
-        self.tree_users = None
-        self.tree_goods = None
+        self.tree_users = self.tree_goods = self.combobox_month = self.label_total_info = self.label_total_goods = None
         self.init_main()
         self.db = db
         self.view_table_users()
-
-
 
     def init_main(self):
         #  ************ Главное окно ******************
@@ -44,17 +41,23 @@ class Main(tk.Frame):
         label_table_name_goods = tk.Label(text='Куплено товара', font=('Adobe Clean Light', 18, 'bold'))
         label_table_name_goods.place(x=730, y=20)
 
-        label_total_user = tk.Label(text='Всего клиентов:', font=('Adobe Clean Light', 15, 'italic'))
+        label_total_user = tk.Label(text='Всего клиентов:', font=('Adobe Clean Light', 16, 'bold'))
         label_total_user.place(x=20, y=500)
 
-        label_total_goods = tk.Label(text='Куплено за месяц ', font=('Adobe Clean Light', 15, 'italic'))
-        label_total_goods.place(x=20, y=570)
+        self.label_total_info = tk.Label(text='OK', font=('Adobe Clean Light', 12, 'italic'))
+        self.label_total_info.place(x=175, y=505)
+
+        label_total_goods = tk.Label(text='Куплено за месяц ', font=('Adobe Clean Light', 16, 'bold'))
+        label_total_goods.place(x=20, y=550)
+
+        self.label_total_goods = tk.Label(text='GO', font=('Adobe Clean Light', 12, 'italic'))
+        self.label_total_goods.place(x=290, y=555)
 
         month = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
                  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
         self.combobox_month = ttk.Combobox(values=month, width=10)
         self.combobox_month.current(0)
-        self.combobox_month.place(x=170, y=577)
+        self.combobox_month.place(x=195, y=557)
 
         # Кнопки
         button_show = tk.Button(text='Отобразить данные')
@@ -73,7 +76,7 @@ class Main(tk.Frame):
         button_edit_user = tk.Button(text='Редактировать')
         button_edit_user.place(x=150, y=420)
 
-        button_delete_user = tk.Button(text='Удалить запись')
+        button_delete_user = tk.Button(text='Удалить запись', command=self.delete_user)
         button_delete_user.place(x=300, y=420)
 
         # Кнопки под ПРАВОЙ таблицей
@@ -151,13 +154,20 @@ class Main(tk.Frame):
     def on_exit(self):
         self.quit()
 
-    def insert_user(self):
-        pass
+    def delete_user(self):
+        # Getting id's of selected users and delete them
+        for item in self.tree_users.selection():
+            user_id = self.tree_users.item(item)['values'][0]
+            self.db.delete_user(user_id)
+        self.view_table_users()
 
     def view_table_users(self):
         [self.tree_users.delete(i) for i in self.tree_users.get_children()]
         [self.tree_users.insert('', 'end', values=(user.id, user.last_name, user.first_name, user.birthday))
          for user in self.db.session.query(User).filter().all()]
+
+    def view_total_users(self):
+        pass
 
 
 class AddUser(tk.Toplevel):
@@ -222,11 +232,8 @@ class AddUser(tk.Toplevel):
             birthday = "/".join([item.get() for item in boxes])
             user = User(entry_last.get(), entry_first.get(), birthday)
             self.view.db.insert_user(user)
-
-            # Clean entry
-            entry_first.delete(0, 'end')
-            entry_last.delete(0, 'end')
-        self.view.view_table_users()
+            self.view.view_table_users()
+            self.destroy()
 
     def cancel(self):
         self.destroy()
