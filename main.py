@@ -143,7 +143,11 @@ class Main(tk.Frame):
         edit_menu = tk.Menu(self.menu_bar, tearoff=0)
         edit_menu.add_command(label='Добавить клиента', command=lambda: AddUser(self.root))
         edit_menu.add_command(label='Добавить товар', command=lambda: AddGoods(self.root))
-        edit_menu.add_command(label='Редактировать')
+        # Конструируем подменю
+        edit_choice = tk.Menu(edit_menu, tearoff=0)
+        edit_choice.add_command(label='Данные клиента')
+        edit_choice.add_command(label='Товар клиента')
+        edit_menu.add_cascade(label='Редактировать', menu=edit_choice)
         self.menu_bar.add_cascade(label='Редактировать', menu=edit_menu)
 
         graphic_menu = tk.Menu(self.menu_bar, tearoff=0)
