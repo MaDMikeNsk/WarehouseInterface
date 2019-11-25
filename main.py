@@ -31,9 +31,10 @@ class Main(tk.Frame):
         self.init_main()
         self.db = db
         self.view_table_users()
+        # self.view_user_goods_table('1')
 
     def init_main(self):
-        #  ************ Главное окно ******************
+        #  ************************************** Главное окно ******************************************************
         # Labels
         label_table_name_users = tk.Label(text='Список клиентов', font=('Adobe Clean Light', 18, 'bold'))
         label_table_name_users.place(x=160, y=20)
@@ -59,8 +60,10 @@ class Main(tk.Frame):
         self.combobox_month.current(0)
         self.combobox_month.place(x=195, y=557)
 
-        # Кнопки
-        button_show = tk.Button(text='Отобразить данные')
+        # *************************** Кнопки между таблицами *****************************************************
+        button_show = tk.Button(text='Отобразить данные',                 # getting user_id from selection, item -> dict
+                                command=lambda: [self.view_user_goods_table(self.tree_users.item(item)['values'][0])
+                                                 for item in self.tree_users.selection()])
         button_show.place(x=515, y=100)
 
         button_show = tk.Button(text='График')
@@ -69,7 +72,7 @@ class Main(tk.Frame):
         button_show = tk.Button(text='Диаграмма')
         button_show.place(x=515, y=300)
 
-        # Кнопки под ЛЕВОЙ таблицей
+        # **************************** Кнопки под ЛЕВОЙ таблицей ********************************************
         button_add_user = tk.Button(text='Добавить клиента', command=lambda: AddUser(self.root))
         button_add_user.place(x=20, y=420)
 
@@ -79,21 +82,22 @@ class Main(tk.Frame):
         button_delete_user = tk.Button(text='Удалить запись', command=self.delete_user)
         button_delete_user.place(x=300, y=420)
 
-        # Кнопки под ПРАВОЙ таблицей
+        # **************************** Кнопки под ПРАВОЙ таблицей ********************************************
         button_add_goods = tk.Button(text='Добавить товар', command=lambda: AddGoods(self.root))
-        button_add_goods.place(x=650, y=420)
+        button_add_goods.place(x=650, y=360)
 
         button_edit_goods = tk.Button(text='Редактировать')
-        button_edit_goods.place(x=750, y=420)
+        button_edit_goods.place(x=750, y=360)
 
-        button_delete_goods = tk.Button(text='Удалить запись')
-        button_delete_goods.place(x=844, y=420)
-        # *********** Левая таблица *****************
+        button_delete_goods = tk.Button(text='Обнулить  запись', command=self.reset_goods)
+        button_delete_goods.place(x=844, y=360)
+
+        # **************************************** Левая таблица *****************************************
         frame_users = tk.Frame()
         frame_users.place(x=20, y=80)
 
         self.tree_users = ttk.Treeview(frame_users, columns=('ID', 'last_name', 'first_name', 'birthday'),
-                                       height=15, show='headings', selectmode='extended')
+                                       height=15, show='headings', selectmode='browse')
         self.tree_users.column("ID", width=45, anchor=tk.CENTER)
         self.tree_users.column("last_name", width=150, anchor=tk.CENTER)
         self.tree_users.column("first_name", width=150, anchor=tk.CENTER)
@@ -111,12 +115,12 @@ class Main(tk.Frame):
         vsb.pack(side='right', fill='y')
         self.tree_users.configure(yscrollcommand=vsb.set)
 
-        # ************ Правая таблица ****************
+        # ***************************************** Правая таблица *******************************************
         frame_goods = tk.Frame()
         frame_goods.place(x=650, y=80)
 
         self.tree_goods = ttk.Treeview(frame_goods, columns=('ID', 'user_id', 'month', 'goods'),
-                                       height=15, show='headings', selectmode='extended')
+                                       height=12, show='headings', selectmode='browse')
         self.tree_goods.column("ID", width=40, anchor=tk.CENTER)
         self.tree_goods.column("user_id", width=70, anchor=tk.CENTER)
         self.tree_goods.column("month", width=100, anchor=tk.CENTER)
@@ -129,7 +133,7 @@ class Main(tk.Frame):
 
         self.tree_goods.pack(side='left')
 
-        # *********** Конструируем 'Меню' ***************
+        # ******************************************* Конструируем 'Меню' *****************************************
         file_menu = tk.Menu(self.menu_bar, tearoff=0)
         file_menu.add_command(label="Открыть...")
         file_menu.add_command(label="Сохранить...")
@@ -159,6 +163,12 @@ class Main(tk.Frame):
         for item in self.tree_users.selection():
             user_id = self.tree_users.item(item)['values'][0]
             self.db.delete_user(user_id)
+            self.db.delete_goods(user_id)
+            for goods in self.tree_goods.selection():
+                if self.tree_goods.item(goods)['values'][0] == user_id:
+                    [self.tree_goods.delete(i) for i in self.tree_goods.get_children()]
+        self.tree_users.delete()
+
         self.view_table_users()
 
     def view_table_users(self):
@@ -166,17 +176,32 @@ class Main(tk.Frame):
         [self.tree_users.insert('', 'end', values=(user.id, user.last_name, user.first_name, user.birthday))
          for user in self.db.session.query(User).filter().all()]
 
+    def view_user_goods_table(self, user_id):
+        [self.tree_goods.delete(i) for i in self.tree_goods.get_children()]
+        [self.tree_goods.insert('', 'end', values=(goods.id, goods.user_id, goods.month, goods.goods))
+         for goods in self.db.session.query(Goods).filter(Goods.user_id == user_id).all()]
+
+    def reset_goods(self):
+        for goods in self.tree_goods.selection():
+            goods_id = self.tree_goods.item(goods)['values'][0]
+            user_id = self.tree_goods.item(goods)['values'][1]
+            self.db.reset_goods(goods_id)
+            self.view_user_goods_table(user_id)
+
     def view_total_users(self):
+        pass
+
+    def view_total_goods(self):
         pass
 
 
 class AddUser(tk.Toplevel):
     def __init__(self, root):
         super().__init__(root)
-        self.init_window()
         # self.grab_set()
         self.birthday = None
         self.view = app
+        self.init_window()
 
     def init_window(self):
         self.title('Добавить клиента')
@@ -218,21 +243,22 @@ class AddUser(tk.Toplevel):
         # **************************************** row 4 ********************************************
         boxes = [combobox_days, combobox_month, combobox_year]
         button_edit = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray',
-                                command=lambda: self.insert(entry_last_name, entry_first_name, boxes))
+                                command=lambda: self.insert_user(entry_last_name, entry_first_name, boxes))
         button_edit.place(x=40, y=120)
 
         button_cancel = tk.Button(self, text='Отмена', padx=5, pady=5, width=15, bg='light gray',
                                   command=lambda: self.cancel())
         button_cancel.place(x=200, y=120)
 
-    def insert(self, entry_last, entry_first, boxes):
+    def insert_user(self, entry_last, entry_first, boxes):
         name = entry_first.get() + entry_last.get()
 
         if name:
             birthday = "/".join([item.get() for item in boxes])
-            user = User(entry_last.get(), entry_first.get(), birthday)
-            self.view.db.insert_user(user)
+            user = User(entry_last.get().strip(), entry_first.get().strip(), birthday)
+            self.view.db.record_user(user)
             self.view.view_table_users()
+            self.view.view_user_goods_table(user.id)
             self.destroy()
 
     def cancel(self):
@@ -244,11 +270,12 @@ class AddGoods(tk.Toplevel):
         super().__init__(root)
         self.label_client_info = None
         self.combobox_month = None
+        self.view = app
         self.init_ui()
 
     def init_ui(self):
         self.title('Добавить товар')
-        self.geometry('360x180+700+400')
+        self.geometry('360x180+680+400')
         self.resizable(False, False)
 
         # **************************************** row 1 ********************************************
@@ -282,6 +309,16 @@ class AddGoods(tk.Toplevel):
         button_cancel = tk.Button(self, text='Отмена', padx=5, pady=5, width=15, bg='light gray',
                                   command=lambda: self.cancel())
         button_cancel.place(x=200, y=130)
+
+    def insert_goods(self, user_id, month, amount):
+        if amount:
+
+            goods = Goods(user_id, month, amount)
+            self.view.db.insert_goods(goods)
+            self.view.view_user_goods_table()
+            # self.destroy()
+        else:
+            self.destroy()
 
     def cancel(self):
         self.destroy()
