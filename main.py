@@ -61,16 +61,18 @@ class Main(tk.Frame):
         self.combobox_month.place(x=195, y=557)
 
         # *************************** Кнопки между таблицами *****************************************************
-        button_show = tk.Button(text='Отобразить данные',                 # getting user_id from selection, item -> dict
-                                command=lambda: [self.view_user_goods_table(self.tree_users.item(item)['values'][0])
-                                                 for item in self.tree_users.selection()])
-        button_show.place(x=515, y=100)
+        self.arrow_image = tk.PhotoImage(file='image/arrow.png')
+        button_show = tk.Button(command=lambda: [self.view_user_goods_table(self.tree_users.item(item)['values'][0])
+                                                 for item in self.tree_users.selection()], image=self.arrow_image, bd=0)
+        button_show.place(x=525, y=110)
 
-        button_show = tk.Button(text='График')
-        button_show.place(x=515, y=200)
+        self.grahic_image = tk.PhotoImage(file='image/graphic.png')
+        button_show = tk.Button(image=self.grahic_image, bd=0)
+        button_show.place(x=530, y=200)
 
-        button_show = tk.Button(text='Диаграмма')
-        button_show.place(x=515, y=300)
+        self.giagram_image = tk.PhotoImage(file='image/diagram.png')
+        button_show = tk.Button(image=self.giagram_image, bd=0)
+        button_show.place(x=530, y=310)
 
         # **************************** Кнопки под ЛЕВОЙ таблицей ********************************************
         button_add_user = tk.Button(text='Добавить клиента', command=lambda: AddUser(self.root))
@@ -171,7 +173,7 @@ class Main(tk.Frame):
             for goods in self.tree_goods.selection():
                 if self.tree_goods.item(goods)['values'][0] == user_id:
                     [self.tree_goods.delete(i) for i in self.tree_goods.get_children()]
-        self.tree_users.delete()
+        # self.tree_users.delete()
 
         self.view_table_users()
 
