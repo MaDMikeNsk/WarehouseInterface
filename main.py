@@ -324,6 +324,14 @@ class AddGoods(tk.Toplevel):
         self.destroy()
 
 
+class EditUser(tk.Toplevel):
+    pass
+
+
+class EditGoods(tk.Toplevel):
+    pass
+
+
 if __name__ == "__main__":
     root = tk.Tk()
 
