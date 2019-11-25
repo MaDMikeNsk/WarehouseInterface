@@ -27,9 +27,13 @@ class Main(tk.Frame):
         super().__init__(root)
         self.root = root
         self.menu_bar = menu_bar
+        self.tree_users = None
+        self.tree_goods = None
         self.init_main()
         self.db = db
-        # self.view_records()
+        self.view_table_users()
+
+
 
     def init_main(self):
         #  ************ Главное окно ******************
@@ -63,7 +67,7 @@ class Main(tk.Frame):
         button_show.place(x=515, y=300)
 
         # Кнопки под ЛЕВОЙ таблицей
-        button_add_user = tk.Button(text='Добавить клиента', command=lambda: User(self.root))
+        button_add_user = tk.Button(text='Добавить клиента', command=lambda: AddUser(self.root))
         button_add_user.place(x=20, y=420)
 
         button_edit_user = tk.Button(text='Редактировать')
@@ -73,7 +77,7 @@ class Main(tk.Frame):
         button_delete_user.place(x=300, y=420)
 
         # Кнопки под ПРАВОЙ таблицей
-        button_add_goods = tk.Button(text='Добавить товар', command=lambda: Goods(self.root))
+        button_add_goods = tk.Button(text='Добавить товар', command=lambda: AddGoods(self.root))
         button_add_goods.place(x=650, y=420)
 
         button_edit_goods = tk.Button(text='Редактировать')
@@ -85,41 +89,42 @@ class Main(tk.Frame):
         frame_users = tk.Frame()
         frame_users.place(x=20, y=80)
 
-        tree_users = ttk.Treeview(frame_users, columns=('ID', 'last_name', 'first_name', 'birthday'),
-                                  height=15, show='headings', selectmode='extended')
-        tree_users.column("ID", width=45, anchor=tk.CENTER)
-        tree_users.column("last_name", width=180, anchor=tk.CENTER)
-        tree_users.column("first_name", width=150, anchor=tk.CENTER)
-        tree_users.column("birthday", width=100, anchor=tk.CENTER)
+        self.tree_users = ttk.Treeview(frame_users, columns=('ID', 'last_name', 'first_name', 'birthday'),
+                                       height=15, show='headings', selectmode='extended')
+        self.tree_users.column("ID", width=45, anchor=tk.CENTER)
+        self.tree_users.column("last_name", width=150, anchor=tk.CENTER)
+        self.tree_users.column("first_name", width=150, anchor=tk.CENTER)
+        self.tree_users.column("birthday", width=110, anchor=tk.CENTER)
 
-        tree_users.heading("ID", text='ID')
-        tree_users.heading("last_name", text='Фамилия')
-        tree_users.heading("first_name", text='Имя')
-        tree_users.heading("birthday", text='Дата рождения')
+        self.tree_users.heading("ID", text='ID')
+        self.tree_users.heading("last_name", text='Фамилия')
+        self.tree_users.heading("first_name", text='Имя')
+        self.tree_users.heading("birthday", text='Дата рождения')
 
-        tree_users.pack(side='left')
+        self.tree_users.pack(side='left')
 
         # Scrollbar <ttk.Scrollbar> on frame_users
-        vsb = ttk.Scrollbar(frame_users, orient="vertical", command=tree_users.yview)
+        vsb = ttk.Scrollbar(frame_users, orient="vertical", command=self.tree_users.yview)
         vsb.pack(side='right', fill='y')
-        tree_users.configure(yscrollcommand=vsb.set)
+        self.tree_users.configure(yscrollcommand=vsb.set)
 
         # ************ Правая таблица ****************
         frame_goods = tk.Frame()
         frame_goods.place(x=650, y=80)
 
-        tree_goods = ttk.Treeview(frame_goods, columns=('ID', 'user_id', 'month', 'goods'),
-                                  height=15, show='headings', selectmode='extended')
-        tree_goods.column("ID", width=40, anchor=tk.CENTER)
-        tree_goods.column("user_id", width=70, anchor=tk.CENTER)
-        tree_goods.column("month", width=100, anchor=tk.CENTER)
-        tree_goods.column("goods", width=100, anchor=tk.CENTER)
+        self.tree_goods = ttk.Treeview(frame_goods, columns=('ID', 'user_id', 'month', 'goods'),
+                                       height=15, show='headings', selectmode='extended')
+        self.tree_goods.column("ID", width=40, anchor=tk.CENTER)
+        self.tree_goods.column("user_id", width=70, anchor=tk.CENTER)
+        self.tree_goods.column("month", width=100, anchor=tk.CENTER)
+        self.tree_goods.column("goods", width=100, anchor=tk.CENTER)
 
-        tree_goods.heading("ID", text='ID')
-        tree_goods.heading("user_id", text='ID Клиента')
-        tree_goods.heading("month", text='Месяц')
-        tree_goods.heading("goods", text='Товар')
-        tree_goods.pack(side='left')
+        self.tree_goods.heading("ID", text='ID')
+        self.tree_goods.heading("user_id", text='ID Клиента')
+        self.tree_goods.heading("month", text='Месяц')
+        self.tree_goods.heading("goods", text='Товар')
+
+        self.tree_goods.pack(side='left')
 
         # *********** Конструируем 'Меню' ***************
         file_menu = tk.Menu(self.menu_bar, tearoff=0)
@@ -149,6 +154,131 @@ class Main(tk.Frame):
     def insert_user(self):
         pass
 
+    def view_table_users(self):
+        [self.tree_users.delete(i) for i in self.tree_users.get_children()]
+        [self.tree_users.insert('', 'end', values=(user.id, user.last_name, user.first_name, user.birthday))
+         for user in self.db.session.query(User).filter().all()]
+
+
+class AddUser(tk.Toplevel):
+    def __init__(self, root):
+        super().__init__(root)
+        self.init_window()
+        # self.grab_set()
+        self.birthday = None
+        self.view = app
+
+    def init_window(self):
+        self.title('Добавить клиента')
+        self.geometry('360x170+700+400')
+        self.resizable(False, False)
+
+        # **************************************** row 1 ********************************************
+        label_first_name = tk.Label(self, text='ИМЯ:')
+        label_first_name.place(x=30, y=20)
+
+        entry_first_name = tk.Entry(self, width=29)
+        entry_first_name.place(x=150, y=20)
+
+        # **************************************** row 2 ********************************************
+        label_last_name = tk.Label(self, text='ФАМИЛИЯ:')
+        label_last_name.place(x=30, y=50)
+
+        entry_last_name = tk.Entry(self, width=29)
+        entry_last_name.place(x=150, y=50)
+
+        # **************************************** row 3 ********************************************
+        label_birthday = tk.Label(self, text='ДАТА РОЖДЕНИЯ:')
+        label_birthday.place(x=30, y=80)
+
+        combobox_days = ttk.Combobox(self, values=[x for x in range(1, 32)], width=2)
+        combobox_days.current(0)
+        combobox_days.place(x=150, y=80)
+
+        month = ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня',
+                 'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря']
+        combobox_month = ttk.Combobox(self, values=month, width=10)
+        combobox_month.current(0)
+        combobox_month.place(x=188, y=80)
+
+        combobox_year = ttk.Combobox(self, values=[x for x in range(1950, 2010)], width=5)
+        combobox_year.current(30)
+        combobox_year.place(x=275, y=80)
+
+        # **************************************** row 4 ********************************************
+        boxes = [combobox_days, combobox_month, combobox_year]
+        button_edit = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray',
+                                command=lambda: self.insert(entry_last_name, entry_first_name, boxes))
+        button_edit.place(x=40, y=120)
+
+        button_cancel = tk.Button(self, text='Отмена', padx=5, pady=5, width=15, bg='light gray',
+                                  command=lambda: self.cancel())
+        button_cancel.place(x=200, y=120)
+
+    def insert(self, entry_last, entry_first, boxes):
+        name = entry_first.get() + entry_last.get()
+
+        if name:
+            birthday = "/".join([item.get() for item in boxes])
+            user = User(entry_last.get(), entry_first.get(), birthday)
+            self.view.db.insert_user(user)
+
+            # Clean entry
+            entry_first.delete(0, 'end')
+            entry_last.delete(0, 'end')
+        self.view.view_table_users()
+
+    def cancel(self):
+        self.destroy()
+
+
+class AddGoods(tk.Toplevel):
+    def __init__(self, root):
+        super().__init__(root)
+        self.label_client_info = None
+        self.combobox_month = None
+        self.init_ui()
+
+    def init_ui(self):
+        self.title('Добавить товар')
+        self.geometry('360x180+700+400')
+        self.resizable(False, False)
+
+        # **************************************** row 1 ********************************************
+        label_client = tk.Label(self, text='КЛИЕНТ:')
+        label_client.place(x=30, y=20)
+
+        self.label_client_info = tk.Label(self, text='OK')
+        self.label_client_info.place(x=115, y=20)
+
+        # **************************************** row 2 ********************************************
+        label_goods = tk.Label(self, text='МЕСЯЦ:')
+        label_goods.place(x=30, y=55)
+
+        month = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+        self.combobox_month = ttk.Combobox(self, values=month, width=10)
+        self.combobox_month.current(0)
+        self.combobox_month.place(x=115, y=55)
+
+        # **************************************** row 3 ********************************************
+        label_month = tk.Label(self, text='ТОВАР (+/-):')
+        label_month.place(x=30, y=90)
+
+        entry_goods = tk.Entry(self, width=13)
+        entry_goods.place(x=115, y=90)
+
+        # **************************************** row 4 ********************************************
+        button_edit = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray')
+        button_edit.place(x=40, y=130)
+
+        button_cancel = tk.Button(self, text='Отмена', padx=5, pady=5, width=15, bg='light gray',
+                                  command=lambda: self.cancel())
+        button_cancel.place(x=200, y=130)
+
+    def cancel(self):
+        self.destroy()
+
 
 if __name__ == "__main__":
     root = tk.Tk()
@@ -157,7 +287,6 @@ if __name__ == "__main__":
     root.config(menu=menu_bar)
 
     db = DatabaseEngine()
-
     app = Main(root)
     app.pack()
     root.title("Warehouse Interface")
