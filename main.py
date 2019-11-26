@@ -216,10 +216,10 @@ class Main(tk.Frame):
 class AddUser(tk.Toplevel):
     def __init__(self, root):
         super().__init__(root)
-        # self.grab_set()
         self.birthday = None
         self.view = app
         self.init_window()
+        self.grab_set()
 
     def init_window(self):
         self.title('Добавить клиента')
@@ -290,6 +290,7 @@ class AddGoods(tk.Toplevel):
         self.combobox_month = None
         self.view = app
         self.init_ui()
+        self.grab_set()
 
     def init_ui(self):
         self.title('Добавить товар')
