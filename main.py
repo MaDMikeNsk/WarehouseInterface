@@ -27,7 +27,8 @@ class Main(tk.Frame):
         super().__init__(root)
         self.root = root
         self.menu_bar = menu_bar
-        self.tree_users = self.tree_goods = self.combobox_month = self.label_total_info = self.label_total_goods = None
+        self.tree_users = self.tree_goods = self.combobox_month = \
+            self.label_total_info = self.label_total_goods = self.current_view_id = None
         self.init_main()
         self.db = db
         self.view_table_users()
@@ -61,7 +62,7 @@ class Main(tk.Frame):
         self.combobox_month.place(x=195, y=557)
 
         # *************************** Кнопки между таблицами *****************************************************
-        self.arrow_image = tk.PhotoImage(file='image/arrow.png')
+        self.arrow_image = tk.PhotoImage(file='image/arrow.png')  # Allowed PPM, PNG, JPEG, GIF, TIFF, and BMP.
         button_show = tk.Button(command=lambda: [self.view_user_goods_table(self.tree_users.item(item)['values'][0])
                                                  for item in self.tree_users.selection()], image=self.arrow_image, bd=0)
         button_show.place(x=525, y=110)
@@ -170,9 +171,13 @@ class Main(tk.Frame):
             user_id = self.tree_users.item(item)['values'][0]
             self.db.delete_user(user_id)
             self.db.delete_goods(user_id)
-            for goods in self.tree_goods.selection():
-                if self.tree_goods.item(goods)['values'][0] == user_id:
-                    [self.tree_goods.delete(i) for i in self.tree_goods.get_children()]
+            if self.current_view_id == user_id:
+                [self.tree_goods.delete(i) for i in self.tree_goods.get_children()]
+                self.current_view_id = None
+
+            # for goods in self.tree_goods.selection():
+               # if self.tree_goods.item(goods)['values'][0] == user_id:
+                   # [self.tree_goods.delete(i) for i in self.tree_goods.get_children()]
         # self.tree_users.delete()
 
         self.view_table_users()
@@ -186,6 +191,7 @@ class Main(tk.Frame):
         [self.tree_goods.delete(i) for i in self.tree_goods.get_children()]
         [self.tree_goods.insert('', 'end', values=(goods.id, goods.user_id, goods.month, goods.goods))
          for goods in self.db.session.query(Goods).filter(Goods.user_id == user_id).all()]
+        self.current_view_id = user_id
 
     def reset_goods(self):
         for goods in self.tree_goods.selection():
@@ -211,7 +217,7 @@ class AddUser(tk.Toplevel):
 
     def init_window(self):
         self.title('Добавить клиента')
-        self.geometry('360x170+700+400')
+        self.geometry('360x170+400+400')
         self.resizable(False, False)
 
         # **************************************** row 1 ********************************************
@@ -264,7 +270,7 @@ class AddUser(tk.Toplevel):
             user = User(entry_last.get().strip(), entry_first.get().strip(), birthday)
             self.view.db.record_user(user)
             self.view.view_table_users()
-            self.view.view_user_goods_table(user.id)
+            # self.view.view_user_goods_table(user.id)
             self.destroy()
 
     def cancel(self):
@@ -281,7 +287,7 @@ class AddGoods(tk.Toplevel):
 
     def init_ui(self):
         self.title('Добавить товар')
-        self.geometry('360x180+680+400')
+        self.geometry('360x180+400+400')
         self.resizable(False, False)
 
         # **************************************** row 1 ********************************************
