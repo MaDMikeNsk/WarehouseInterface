@@ -17,7 +17,6 @@ c) менять диапазон времени для графиков -  ме�
 """
 import tkinter as tk
 from tkinter import ttk
-from tkinter import font
 from src.TableItems import User, Goods
 from src.DatabaseEngine import DatabaseEngine
 
@@ -32,7 +31,6 @@ class Main(tk.Frame):
         self.init_main()
         self.db = db
         self.view_table_users()
-        # self.view_user_goods_table('1')
 
     def init_main(self):
         #  ************************************** Главное окно ******************************************************
@@ -47,19 +45,19 @@ class Main(tk.Frame):
         label_total_user.place(x=20, y=500)
 
         self.label_total_info = tk.Label(text='OK', font=('Adobe Clean Light', 12, 'italic'))
-        self.label_total_info.place(x=175, y=505)
+        self.label_total_info.place(x=200, y=505)
 
         label_total_goods = tk.Label(text='Куплено за месяц ', font=('Adobe Clean Light', 16, 'bold'))
         label_total_goods.place(x=20, y=550)
 
         self.label_total_goods = tk.Label(text='GO', font=('Adobe Clean Light', 12, 'italic'))
-        self.label_total_goods.place(x=290, y=555)
+        self.label_total_goods.place(x=310, y=555)
 
         month = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
                  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
         self.combobox_month = ttk.Combobox(values=month, width=10)
         self.combobox_month.current(0)
-        self.combobox_month.place(x=195, y=557)
+        self.combobox_month.place(x=220, y=557)
 
         # *************************** Кнопки между таблицами *****************************************************
         self.arrow_image = tk.PhotoImage(file='image/arrow.png')  # Allowed PPM, PNG, JPEG, GIF, TIFF, and BMP.
@@ -311,25 +309,24 @@ class AddGoods(tk.Toplevel):
         label_month = tk.Label(self, text='ТОВАР (+/-):')
         label_month.place(x=30, y=90)
 
-        entry_goods = tk.Entry(self, width=13)
-        entry_goods.place(x=115, y=90)
+        self.entry_goods = tk.Entry(self, width=13)
+        self.entry_goods.place(x=115, y=90)
 
         # **************************************** row 4 ********************************************
-        button_edit = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray')
+        button_edit = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray',
+                                command=lambda:
+                                self.update_goods(self.view.current_view_id, self.combobox_month, self.entry_goods))
         button_edit.place(x=40, y=130)
 
         button_cancel = tk.Button(self, text='Отмена', padx=5, pady=5, width=15, bg='light gray',
                                   command=lambda: self.cancel())
         button_cancel.place(x=200, y=130)
 
-    def insert_goods(self, user_id, month, amount):
-        if amount:
-
-            goods = Goods(user_id, month, amount)
-            self.view.db.insert_goods(goods)
-            self.view.view_user_goods_table()
-            # self.destroy()
-        else:
+    def update_goods(self, user_id, combobox_month, entry_goods):
+        if entry_goods.get() and self.view.current_view_id is not None:
+            # goods = Goods(user_id, combobox_month.get(), entry_goods.get())
+            self.view.db.update_goods(user_id, combobox_month.get(), int(entry_goods.get()))
+            self.view.view_user_goods_table(user_id)
             self.destroy()
 
     def cancel(self):
