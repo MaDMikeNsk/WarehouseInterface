@@ -22,19 +22,23 @@ from src.DatabaseEngine import DatabaseEngine
 
 
 class Main(tk.Frame):
-    def __init__(self, root):
-        super().__init__(root)
-        self.root = root
-        self.menu_bar = menu_bar
+    def __init__(self, my_root):
+        super().__init__(my_root)
+        self.root = my_root
+        self.db = db
         self.tree_users = \
             self.tree_goods = \
             self.combobox_month = \
             self.label_total_info = \
-            self.label_total_goods = \
+            self.label_total_goods_per_month = \
             self.current_view_user_id = \
-            self.current_view_user_name = None
+            self.current_view_user_name = \
+            self.arrow_image = \
+            self.graphic_image = \
+            self.diagram_image = None
+        self.menu_bar = tk.Menu(root)
+        self.root.config(menu=self.menu_bar)
         self.init_main()
-        self.db = db
         self.view_table_users()
 
     def init_main(self):
@@ -49,20 +53,21 @@ class Main(tk.Frame):
         label_total_user = tk.Label(text='Всего клиентов:', font=('Adobe Clean Light', 16, 'bold'))
         label_total_user.place(x=20, y=500)
 
-        self.label_total_info = tk.Label(text='OK', font=('Adobe Clean Light', 11, 'italic'))
-        self.label_total_info.place(x=200, y=505)
+        self.label_total_info = tk.Label(font=('Adobe Clean Light', 14, 'italic'), fg='dark blue')
+        self.label_total_info.place(x=190, y=505)
 
         label_total_goods = tk.Label(text='Куплено за месяц ', font=('Adobe Clean Light', 16, 'bold'))
         label_total_goods.place(x=20, y=550)
 
-        self.label_total_goods = tk.Label(text='GO', font=('Adobe Clean Light', 12, 'italic'))
-        self.label_total_goods.place(x=310, y=555)
+        self.label_total_goods_per_month = tk.Label(font=('Adobe Clean Light', 14, 'italic'), fg='dark blue')
+        self.label_total_goods_per_month.place(x=310, y=553)
 
         month = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
                  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
         self.combobox_month = ttk.Combobox(values=month, width=10)
+        self.combobox_month.bind("<<ComboboxSelected>>", self.callback)
         self.combobox_month.current(0)
-        self.combobox_month.place(x=220, y=557)
+        self.combobox_month.place(x=215, y=557)
 
         # *************************** Кнопки между таблицами *****************************************************
         self.arrow_image = tk.PhotoImage(file='image/arrow.png')  # Allowed PPM, PNG, JPEG, GIF, TIFF, and BMP.
@@ -70,12 +75,12 @@ class Main(tk.Frame):
                                                  for item in self.tree_users.selection()], image=self.arrow_image, bd=0)
         button_show.place(x=525, y=110)
 
-        self.grahic_image = tk.PhotoImage(file='image/graphic.png')
-        button_show = tk.Button(image=self.grahic_image, bd=0)
+        self.graphic_image = tk.PhotoImage(file='image/graphic.png')
+        button_show = tk.Button(image=self.graphic_image, bd=0)
         button_show.place(x=530, y=200)
 
-        self.giagram_image = tk.PhotoImage(file='image/diagram.png')
-        button_show = tk.Button(image=self.giagram_image, bd=0)
+        self.diagram_image = tk.PhotoImage(file='image/diagram.png')
+        button_show = tk.Button(image=self.diagram_image, bd=0)
         button_show.place(x=530, y=310)
 
         # **************************** Кнопки под ЛЕВОЙ таблицей ********************************************
@@ -141,15 +146,18 @@ class Main(tk.Frame):
         self.tree_goods.pack(side='left')
 
         # ******************************************* Конструируем 'Меню' *****************************************
+        # 'Файл'
         file_menu = tk.Menu(self.menu_bar, tearoff=0)
         file_menu.add_command(label="Открыть...")
         file_menu.add_command(label="Сохранить...")
         file_menu.add_command(label="Выход", command=self.on_exit)
         self.menu_bar.add_cascade(label='Файл', menu=file_menu)
 
+        # 'Редактировать'
         edit_menu = tk.Menu(self.menu_bar, tearoff=0)
         edit_menu.add_command(label='Добавить клиента', command=lambda: AddUser(self.root))
         edit_menu.add_command(label='Добавить товар', command=lambda: self.add_goods())
+
         # Конструируем подменю
         edit_choice = tk.Menu(edit_menu, tearoff=0)
         edit_choice.add_command(label='Данные клиента')
@@ -157,17 +165,32 @@ class Main(tk.Frame):
         edit_menu.add_cascade(label='Редактировать', menu=edit_choice)
         self.menu_bar.add_cascade(label='Редактировать', menu=edit_menu)
 
+        # 'График'
         graphic_menu = tk.Menu(self.menu_bar, tearoff=0)
         graphic_menu.add_command(label='График товаров')
         graphic_menu.add_command(label='Диаграмма товаров')
         self.menu_bar.add_cascade(label='График', menu=graphic_menu)
 
+        # 'Справка'
         help_menu = tk.Menu(self.menu_bar, tearoff=0)
         help_menu.add_command(label='О программе')
         self.menu_bar.add_cascade(label='Справка', menu=help_menu)
 
         # ***************************** Выводим информацию итого ***************************************************
-        self.label_total_info['text'] = 'HERE MY TEXT'
+        self.update_label()
+        self.update_total_goods_per_month(self.combobox_month.get())
+
+    def callback(self, event):
+        self.update_total_goods_per_month(self.combobox_month.get())
+
+    def update_label(self):
+        self.label_total_info['text'] = len(self.db.session.query(User).filter().all())
+
+    def update_total_goods_per_month(self, month):
+        res = 0
+        for item in self.db.session.query(Goods).filter(Goods.month == month).all():
+            res += int(item.goods)
+        self.label_total_goods_per_month['text'] = res
 
     def on_exit(self):
         self.quit()
@@ -182,6 +205,8 @@ class Main(tk.Frame):
                 [self.tree_goods.delete(i) for i in self.tree_goods.get_children()]
                 self.current_view_user_id = None
                 self.current_view_user_name = None
+        self.update_label()
+        self.update_total_goods_per_month(self.combobox_month.get())
         self.view_table_users()
 
     def view_table_users(self):
@@ -204,12 +229,7 @@ class Main(tk.Frame):
             user_id = self.tree_goods.item(goods)['values'][1]
             self.db.reset_goods(goods_id)
             self.view_user_goods_table(user_id)
-
-    def view_total_users(self):
-        pass
-
-    def view_total_goods(self):
-        pass
+        self.update_total_goods_per_month(self.combobox_month.get())
 
     def add_goods(self):
         if self.current_view_user_id is not None:
@@ -217,8 +237,8 @@ class Main(tk.Frame):
 
 
 class AddUser(tk.Toplevel):
-    def __init__(self, root):
-        super().__init__(root)
+    def __init__(self, my_root):
+        super().__init__(my_root)
         self.birthday = None
         self.view = app
         self.init_window()
@@ -264,7 +284,9 @@ class AddUser(tk.Toplevel):
         # **************************************** row 4 ********************************************
         boxes = [combobox_days, combobox_month, combobox_year]
         button_edit = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray',
-                                command=lambda: self.insert_user(entry_last_name, entry_first_name, boxes))
+                                command=lambda: self.insert_user(entry_last_name,
+                                                                 entry_first_name,
+                                                                 boxes))
         button_edit.place(x=40, y=120)
 
         button_cancel = tk.Button(self, text='Отмена', padx=5, pady=5, width=15, bg='light gray',
@@ -276,21 +298,25 @@ class AddUser(tk.Toplevel):
 
         if name:
             birthday = "/".join([item.get() for item in boxes])
-            user = User(entry_last.get().strip(), entry_first.get().strip(), birthday)
+            user = User(entry_last.get().strip(),
+                        entry_first.get().strip(),
+                        birthday)
             self.view.db.record_user(user)
             self.view.view_table_users()
-            # self.view.view_user_goods_table(user.id)
             self.destroy()
+        self.view.update_label()
+        self.view.update_total_goods_per_month(self.view.combobox_month.get())
 
     def cancel(self):
         self.destroy()
 
 
 class AddGoods(tk.Toplevel):
-    def __init__(self, root):
-        super().__init__(root)
-        self.label_client_info = None
-        self.combobox_month = None
+    def __init__(self, my_root):
+        super().__init__(my_root)
+        self.label_client_info = \
+            self.entry_goods = \
+            self.combobox_month = None
         self.view = app
         self.init_ui()
         self.grab_set()
@@ -327,8 +353,9 @@ class AddGoods(tk.Toplevel):
 
         # **************************************** row 4 ********************************************
         button_edit = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray',
-                                command=lambda:
-                                self.update_goods(self.view.current_view_user_id, self.combobox_month, self.entry_goods))
+                                command=lambda: self.update_goods(self.view.current_view_user_id,
+                                                                  self.combobox_month,
+                                                                  self.entry_goods))
         button_edit.place(x=40, y=130)
 
         button_cancel = tk.Button(self, text='Отмена', padx=5, pady=5, width=15, bg='light gray',
@@ -343,10 +370,10 @@ class AddGoods(tk.Toplevel):
                 return s.isdigit()
 
         if is_int(entry_goods.get()) and self.view.current_view_user_id is not None:
-            # goods = Goods(user_id, combobox_month.get(), entry_goods.get())
             self.view.db.update_goods(user_id, combobox_month.get(), int(entry_goods.get()))
             self.view.view_user_goods_table(user_id)
             self.destroy()
+        self.view.update_total_goods_per_month(self.view.combobox_month.get())
 
     def cancel(self):
         self.destroy()
@@ -362,10 +389,6 @@ class EditGoods(tk.Toplevel):
 
 if __name__ == "__main__":
     root = tk.Tk()
-
-    menu_bar = tk.Menu(root)
-    root.config(menu=menu_bar)
-
     db = DatabaseEngine()
     app = Main(root)
     app.pack()
