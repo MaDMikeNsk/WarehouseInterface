@@ -348,6 +348,6 @@ if __name__ == "__main__":
     app = Main(root)
     app.pack()
     root.title("Warehouse Interface")
-    root.geometry("1000x800+400+100")
+    root.geometry("1000x650+100+50")
     root.resizable(False, False)
     root.mainloop()
