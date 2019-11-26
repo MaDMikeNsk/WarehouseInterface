@@ -49,7 +49,7 @@ class Main(tk.Frame):
         label_total_user = tk.Label(text='Всего клиентов:', font=('Adobe Clean Light', 16, 'bold'))
         label_total_user.place(x=20, y=500)
 
-        self.label_total_info = tk.Label(text='OK', font=('Adobe Clean Light', 12, 'italic'))
+        self.label_total_info = tk.Label(text='OK', font=('Adobe Clean Light', 11, 'italic'))
         self.label_total_info.place(x=200, y=505)
 
         label_total_goods = tk.Label(text='Куплено за месяц ', font=('Adobe Clean Light', 16, 'bold'))
@@ -165,6 +165,9 @@ class Main(tk.Frame):
         help_menu = tk.Menu(self.menu_bar, tearoff=0)
         help_menu.add_command(label='О программе')
         self.menu_bar.add_cascade(label='Справка', menu=help_menu)
+
+        # ***************************** Выводим информацию итого ***************************************************
+        self.label_total_info['text'] = 'HERE MY TEXT'
 
     def on_exit(self):
         self.quit()
