@@ -26,8 +26,13 @@ class Main(tk.Frame):
         super().__init__(root)
         self.root = root
         self.menu_bar = menu_bar
-        self.tree_users = self.tree_goods = self.combobox_month = \
-            self.label_total_info = self.label_total_goods = self.current_view_id = None
+        self.tree_users = \
+            self.tree_goods = \
+            self.combobox_month = \
+            self.label_total_info = \
+            self.label_total_goods = \
+            self.current_view_user_id = \
+            self.current_view_user_name = None
         self.init_main()
         self.db = db
         self.view_table_users()
@@ -84,7 +89,8 @@ class Main(tk.Frame):
         button_delete_user.place(x=300, y=420)
 
         # **************************** Кнопки под ПРАВОЙ таблицей ********************************************
-        button_add_goods = tk.Button(text='Добавить товар', command=lambda: AddGoods(self.root))
+        button_add_goods = tk.Button(text='Добавить товар',
+                                     command=lambda: self.add_goods())
         button_add_goods.place(x=650, y=360)
 
         button_edit_goods = tk.Button(text='Редактировать')
@@ -143,7 +149,7 @@ class Main(tk.Frame):
 
         edit_menu = tk.Menu(self.menu_bar, tearoff=0)
         edit_menu.add_command(label='Добавить клиента', command=lambda: AddUser(self.root))
-        edit_menu.add_command(label='Добавить товар', command=lambda: AddGoods(self.root))
+        edit_menu.add_command(label='Добавить товар', command=lambda: self.add_goods())
         # Конструируем подменю
         edit_choice = tk.Menu(edit_menu, tearoff=0)
         edit_choice.add_command(label='Данные клиента')
@@ -169,15 +175,10 @@ class Main(tk.Frame):
             user_id = self.tree_users.item(item)['values'][0]
             self.db.delete_user(user_id)
             self.db.delete_goods(user_id)
-            if self.current_view_id == user_id:
+            if self.current_view_user_id == user_id:
                 [self.tree_goods.delete(i) for i in self.tree_goods.get_children()]
-                self.current_view_id = None
-
-            # for goods in self.tree_goods.selection():
-               # if self.tree_goods.item(goods)['values'][0] == user_id:
-                   # [self.tree_goods.delete(i) for i in self.tree_goods.get_children()]
-        # self.tree_users.delete()
-
+                self.current_view_user_id = None
+                self.current_view_user_name = None
         self.view_table_users()
 
     def view_table_users(self):
@@ -189,7 +190,10 @@ class Main(tk.Frame):
         [self.tree_goods.delete(i) for i in self.tree_goods.get_children()]
         [self.tree_goods.insert('', 'end', values=(goods.id, goods.user_id, goods.month, goods.goods))
          for goods in self.db.session.query(Goods).filter(Goods.user_id == user_id).all()]
-        self.current_view_id = user_id
+
+        self.current_view_user_id = user_id
+        for user in self.db.session.query(User).filter(User.id == user_id).all():
+            self.current_view_user_name = user.last_name + ' ' + user.first_name
 
     def reset_goods(self):
         for goods in self.tree_goods.selection():
@@ -203,6 +207,10 @@ class Main(tk.Frame):
 
     def view_total_goods(self):
         pass
+
+    def add_goods(self):
+        if self.current_view_user_id is not None:
+            AddGoods(self.root)
 
 
 class AddUser(tk.Toplevel):
@@ -292,7 +300,8 @@ class AddGoods(tk.Toplevel):
         label_client = tk.Label(self, text='КЛИЕНТ:')
         label_client.place(x=30, y=20)
 
-        self.label_client_info = tk.Label(self, text='OK')
+        self.label_client_info = tk.Label(self, text=self.view.current_view_user_name,
+                                          font=('Adobe Clean Light', 11, 'italic'), fg='gray')
         self.label_client_info.place(x=115, y=20)
 
         # **************************************** row 2 ********************************************
@@ -315,7 +324,7 @@ class AddGoods(tk.Toplevel):
         # **************************************** row 4 ********************************************
         button_edit = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray',
                                 command=lambda:
-                                self.update_goods(self.view.current_view_id, self.combobox_month, self.entry_goods))
+                                self.update_goods(self.view.current_view_user_id, self.combobox_month, self.entry_goods))
         button_edit.place(x=40, y=130)
 
         button_cancel = tk.Button(self, text='Отмена', padx=5, pady=5, width=15, bg='light gray',
@@ -323,7 +332,13 @@ class AddGoods(tk.Toplevel):
         button_cancel.place(x=200, y=130)
 
     def update_goods(self, user_id, combobox_month, entry_goods):
-        if entry_goods.get() and self.view.current_view_id is not None:
+        def is_int(s):
+            if s != '':
+                if s[0] in ('-', '+'):
+                    return s[1:].isdigit()
+                return s.isdigit()
+
+        if is_int(entry_goods.get()) and self.view.current_view_user_id is not None:
             # goods = Goods(user_id, combobox_month.get(), entry_goods.get())
             self.view.db.update_goods(user_id, combobox_month.get(), int(entry_goods.get()))
             self.view.view_user_goods_table(user_id)

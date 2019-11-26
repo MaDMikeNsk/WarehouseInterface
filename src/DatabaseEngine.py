@@ -15,7 +15,7 @@ class DatabaseEngine:
         month = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
                  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
         for x in range (12):
-            goods = Goods(user.id, month[x], goods=0)
+            goods = Goods(user.id, month[x], goods=25)
             self.session.add(goods)
         self.session.commit()
 
@@ -24,7 +24,7 @@ class DatabaseEngine:
             self.session.delete(user)
             self.session.commit()
 
-    def insert_goods(self, goods):
+    def record_goods(self, goods):
         self.session.add(goods)
         self.session.commit()
 
