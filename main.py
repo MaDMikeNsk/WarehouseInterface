@@ -34,10 +34,11 @@ class Main(tk.Frame):
             self.current_selected_user_id = \
             self.current_selected_user_name = \
             self.current_selected_month = \
-            self.current_selected_goods = \
             self.arrow_image = \
             self.graphic_image = \
-            self.diagram_image = None
+            self.diagram_image = \
+            self.MONTH = None
+        self.current_selected_goods = 0
         self.menu_bar = tk.Menu(root)
         self.root.config(menu=self.menu_bar)
         self.init_main()
@@ -64,9 +65,9 @@ class Main(tk.Frame):
         self.label_total_goods_per_month = tk.Label(font=('Adobe Clean Light', 14, 'italic'), fg='dark blue')
         self.label_total_goods_per_month.place(x=310, y=553)
 
-        month = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-                 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
-        self.combobox_month = ttk.Combobox(values=month, width=10)
+        self.MONTH = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                      'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+        self.combobox_month = ttk.Combobox(values=self.MONTH, width=10)
         self.combobox_month.bind("<<ComboboxSelected>>", self.callback)
         self.combobox_month.current(0)
         self.combobox_month.place(x=215, y=557)
@@ -202,8 +203,10 @@ class Main(tk.Frame):
             self.db.delete_goods(user_id)
             if self.current_selected_user_id == user_id:
                 [self.tree_goods.delete(i) for i in self.tree_goods.get_children()]
-                self.current_selected_user_id = None
-                self.current_selected_user_name = None
+                self.current_selected_user_id = \
+                    self.current_selected_user_name = \
+                    self.current_selected_month = None
+                self.current_selected_goods = 0
         self.update_label()
         self.update_total_goods_per_month(self.combobox_month.get())
         self.view_table_users()
@@ -218,7 +221,11 @@ class Main(tk.Frame):
         [self.tree_goods.insert('', 'end', values=(goods.id, goods.user_id, goods.month, goods.goods))
          for goods in self.db.session.query(Goods).filter(Goods.user_id == user_id).all()]
 
+        # Присваиваем значения глобальным переменным в зависимости от клика в таблицах
         self.current_selected_user_id = user_id
+        self.current_selected_month = None
+        self.current_selected_goods = 0
+
         for user in self.db.session.query(User).filter(User.id == user_id).all():
             self.current_selected_user_name = user.last_name + ' ' + user.first_name
 
@@ -239,12 +246,11 @@ class Main(tk.Frame):
             AddGoods(self.root)
 
     def edit_goods(self):
-        if self.current_selected_user_id is not None and self.tree_goods.selection() != ():
-            for item in self.tree_goods.selection():
-                self.current_selected_month = self.tree_goods.item(item)['values'][2]
-                self.current_selected_goods = self.tree_goods.item(item)['values'][3]
-                print(self.current_selected_user_id, self.current_selected_user_name,
-                      self.current_selected_month, self.current_selected_goods)
+        if self.current_selected_user_id is not None:
+            if self.tree_goods.selection() != ():
+                for item in self.tree_goods.selection():
+                    self.current_selected_month = self.tree_goods.item(item)['values'][2]
+                    self.current_selected_goods = self.tree_goods.item(item)['values'][3]
 
             EditGoods(self.root)
 
@@ -287,9 +293,10 @@ class AddUser(tk.Toplevel):
         combobox_days.current(0)
         combobox_days.place(x=150, y=80)
 
-        month = ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня',
-                 'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря']
-        combobox_month = ttk.Combobox(self, values=month, width=10)
+        # month = ['Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня',
+         #        'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря']
+
+        combobox_month = ttk.Combobox(self, values=self.view.MONTH, width=10)
         combobox_month.current(0)
         combobox_month.place(x=188, y=80)
 
@@ -354,11 +361,9 @@ class AddGoods(tk.Toplevel):
         label_goods = tk.Label(self, text='МЕСЯЦ:')
         label_goods.place(x=30, y=55)
 
-        month = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-                 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
-        self.combobox_month = ttk.Combobox(self, values=month, width=10)
+        self.combobox_month = ttk.Combobox(self, values=self.view.MONTH, width=10)
         if self.view.current_selected_month is not None:
-            self.combobox_month.current(month.index(self.view.current_selected_month))
+            self.combobox_month.current(self.view.MONTH.index(self.view.current_selected_month))
         else:
             self.combobox_month.current(0)
         self.combobox_month.place(x=115, y=55)
@@ -389,7 +394,7 @@ class AddGoods(tk.Toplevel):
                 return s.isdigit()
 
         if is_int(entry_goods.get()) and self.view.current_selected_user_id is not None:
-            self.view.db.update_goods(user_id, combobox_month.get(), int(entry_goods.get()))
+            self.view.db.add_goods(user_id, combobox_month.get(), int(entry_goods.get()))
             self.view.view_table_user_goods(user_id)
             self.destroy()
         self.view.update_total_goods_per_month(self.view.combobox_month.get())
@@ -406,6 +411,8 @@ class EditGoods(tk.Toplevel):
     def __init__(self, my_root):
         super().__init__(my_root)
         self.view = app
+        self.current_month = self.entry_text = self.entry_goods = self.combobox_month = None
+
         self.init_ui()
         self.grab_set()
 
@@ -426,26 +433,64 @@ class EditGoods(tk.Toplevel):
         label_month = tk.Label(self, text='МЕСЯЦ:')
         label_month.place(x=30, y=55)
 
-        label_month_info = tk.Label(self, text=self.view.current_selected_month,
-                                    font=('Adobe Clean Light', 11, 'italic'), fg='gray')
-        label_month_info.place(x=115, y=55)
+        self.combobox_month = ttk.Combobox(self, values=self.view.MONTH, width=10)
+        if self.view.current_selected_month is not None:
+            self.combobox_month.current(self.view.MONTH.index(self.view.current_selected_month))
+        else:
+            self.combobox_month.current(0)
+        self.combobox_month.bind("<<ComboboxSelected>>", self.on_click_month_box)
+        self.combobox_month.place(x=115, y=55)
 
         # **************************************** row 3 ********************************************
         label_goods = tk.Label(self, text='ТОВАР:')
         label_goods.place(x=30, y=90)
 
-        entry_text = tk.StringVar()
-        entry_goods = tk.Entry(self, textvariable=entry_text, width=7)
-        entry_text.set(self.view.current_selected_goods)
-        entry_goods.place(x=115, y=90)
+        self.entry_text = tk.StringVar()
+        self.entry_goods = tk.Entry(self, textvariable=self.entry_text, width=7)
+
+        if self.view.tree_goods.selection() != ():
+            month = ''
+            for record in self.view.tree_goods.selection():
+                month = self.view.tree_goods.item(record)['values'][2]
+            for item in self.view.db.session.query(Goods).filter(Goods.user_id == self.view.current_selected_user_id,
+                                                                 Goods.month == month).all():
+                self.entry_text.set(item.goods)
+        else:
+            for item in self.view.db.session.query(Goods).filter(Goods.user_id == self.view.current_selected_user_id,
+                                                                 Goods.month == 'Январь').all():
+                self.entry_text.set(item.goods)
+        self.entry_goods.place(x=115, y=90)
 
         # **************************************** row 4 ********************************************
-        button_edit = tk.Button(self, text='Редактировать', padx=5, pady=5, width=15, bg='light gray')
+        button_edit = tk.Button(self, text='Редактировать', padx=5, pady=5, width=15, bg='light gray',
+                                command=lambda: self.edit_goods(self.view.current_selected_user_id,
+                                                                self.combobox_month,
+                                                                self.entry_goods))
         button_edit.place(x=40, y=130)
 
         button_cancel = tk.Button(self, text='Отмена', padx=5, pady=5, width=15, bg='light gray',
                                   command=lambda: self.cancel())
         button_cancel.place(x=200, y=130)
+
+    def on_click_month_box(self, event):
+        current_month = self.combobox_month.get()
+        for item in self.view.db.session.query(Goods).filter(Goods.user_id == self.view.current_selected_user_id,
+                                                             Goods.month == current_month).all():
+            self.entry_text.set(item.goods)
+
+    def edit_goods(self, user_id, combobox_month, entry_goods):
+
+        def is_int(s):
+            if s != '':
+                if s[0] in ('-', '+'):
+                    return s[1:].isdigit()
+                return s.isdigit()
+
+        if is_int(entry_goods.get()):
+            self.view.db.update_goods(user_id, combobox_month.get(), entry_goods.get())
+            self.view.view_table_user_goods(user_id)
+            self.view.update_total_goods_per_month(self.view.combobox_month.get())
+            self.destroy()
 
     def cancel(self):
         self.destroy()
