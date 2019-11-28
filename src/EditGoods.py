@@ -6,7 +6,7 @@ from src.TableItems import Goods
 
 
 class EditGoods(tk.Toplevel):
-    def __init__(self, my_root):
+    def __init__(self, my_root, main_window_current_state):
         super().__init__(my_root)
         # self.view = app
         self.current_month = self.entry_text = self.entry_goods = self.combobox_month = None
@@ -86,7 +86,7 @@ class EditGoods(tk.Toplevel):
 
         if is_int(entry_goods.get()):
             self.view.db.update_goods(user_id, combobox_month.get(), entry_goods.get())
-            self.view.view_table_user_goods(user_id)
+            self.view.show_table_user_goods(user_id)
             self.view.update_total_goods_per_month(self.view.combobox_month.get())
             self.destroy()
 

@@ -10,13 +10,12 @@ class DatabaseEngine:
         self.session = session()
 
     def record_user(self, user):
+        import Main
+        # Добавляем пользователя в базу user и 12 записей в таблицу goods по его ID
         self.session.add(user)
-        self.session.commit()
-        month = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-                 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
-        for x in range (12):
-            goods = Goods(user.id, month[x], goods=25)
-            self.session.add(goods)
+        for x in range(12):
+            goods = Goods(user.id, Main.MONTH[x], goods=25)
+            self.record_goods(goods)
         self.session.commit()
 
     def delete_user(self, user_id):
@@ -38,7 +37,7 @@ class DatabaseEngine:
             self.session.delete(goods)
             self.session.commit()
 
-    def add_goods(self, user_id, month, goods_amount: int):
+    def add_goods_for_this_month(self, user_id, month, goods_amount: int):
         for goods in self.session.query(Goods).filter(Goods.user_id == user_id, Goods.month == month).all():
             res = int(goods.goods) + goods_amount
             goods.goods = res

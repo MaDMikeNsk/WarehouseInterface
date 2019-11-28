@@ -32,8 +32,8 @@ class AddUser(tk.Toplevel):
         label_last_name = tk.Label(self, text='ФАМИЛИЯ:')
         label_last_name.place(x=30, y=50)
 
-        entry_last_name = tk.Entry(self, width=29)
-        entry_last_name.place(x=150, y=50)
+        self.entry_last_name = tk.Entry(self, width=29)
+        self.entry_last_name.place(x=150, y=50)
 
         # **************************************** row 3 ********************************************
         label_birthday = tk.Label(self, text='ДАТА РОЖДЕНИЯ:')
@@ -52,30 +52,26 @@ class AddUser(tk.Toplevel):
         self.combobox_year.place(x=275, y=80)
 
         # **************************************** row 4 ********************************************
-        boxes = [self.combobox_days, self.combobox_month, self.combobox_year]
-        button_edit = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray',
-                                command=lambda: self.insert_user(entry_last_name,
-                                                                 self.entry_first_name,
-                                                                 boxes))
-        button_edit.place(x=40, y=120)
+        self.user_birthday = [self.combobox_days.get(), self.combobox_month.get(), self.combobox_year.get()]
+
+        button_add = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray',
+                               command=lambda: self.add_user_to_db(self.entry_first_name.get(),
+                                                                   self.entry_last_name.get(),
+                                                                   self.user_birthday))
+        button_add.place(x=40, y=120)
 
         button_cancel = tk.Button(self, text='Отмена', padx=5, pady=5, width=15, bg='light gray',
-                                  command=lambda: self.cancel())
+                                  command=lambda: self.destroy())
         button_cancel.place(x=200, y=120)
 
-    def insert_user(self, entry_last, entry_first, boxes):
-        name = entry_first.get() + entry_last.get()
-
-        if name:
-            birthday = "/".join([item.get() for item in boxes])
-            user = User(entry_last.get().strip(),
-                        entry_first.get().strip(),
-                        birthday)
-            self.view.db.record_user(user)
-            self.view.view_table_users()
+    def add_user_to_db(self, user_first_name: str, user_last_name: str, user_birthday_date: list):
+        import Main
+        if user_first_name.isalpha() and user_last_name.isalpha():
+            birthday = user_birthday_date[0] + '/' + user_birthday_date[1] + '/' + user_birthday_date[2]
+            user = User(user_last_name, user_first_name, birthday)
+            Main.db.record_user(user)
             self.destroy()
-        self.view.update_label()
-        self.view.update_total_goods_per_month(self.view.combobox_month.get())
-
-    def cancel(self):
-        self.destroy()
+        # Перерисовывам таблицу пользователей и обновляем данные ИТОГО
+        Main.app.show_table_users()
+        Main.update_label_total_user_info()
+        Main.view.update_total_goods_per_month()

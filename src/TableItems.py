@@ -31,5 +31,6 @@ class Goods(Base):
         self.month = month
         self.goods = goods
 
+
 # Creating all tables (User, Goods)
 Base.metadata.create_all(engine)
