@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 
-from main import app
+# import Main
+
 from src.TableItems import User
 
 
@@ -14,6 +15,8 @@ class AddUser(tk.Toplevel):
         self.grab_set()
 
     def init_window(self):
+        import Main
+
         self.title('Добавить клиента...')
         self.geometry('360x170+400+400')
         self.resizable(False, False)
@@ -36,20 +39,20 @@ class AddUser(tk.Toplevel):
         label_birthday = tk.Label(self, text='ДАТА РОЖДЕНИЯ:')
         label_birthday.place(x=30, y=80)
 
-        combobox_days = ttk.Combobox(self, values=[x for x in range(1, 32)], width=2)
-        combobox_days.current(0)
-        combobox_days.place(x=150, y=80)
+        self.combobox_days = ttk.Combobox(self, values=[x for x in range(1, 32)], width=2)
+        self.combobox_days.current(0)
+        self.combobox_days.place(x=150, y=80)
 
-        combobox_month = ttk.Combobox(self, values=self.view.MONTH, width=10)
-        combobox_month.current(0)
-        combobox_month.place(x=188, y=80)
+        self.combobox_month = ttk.Combobox(self, values=Main.MONTH, width=10)
+        self.combobox_month.current(0)
+        self.combobox_month.place(x=188, y=80)
 
-        combobox_year = ttk.Combobox(self, values=[x for x in range(1950, 2010)], width=5)
-        combobox_year.current(30)
-        combobox_year.place(x=275, y=80)
+        self.combobox_year = ttk.Combobox(self, values=[x for x in range(1950, 2010)], width=5)
+        self.combobox_year.current(30)
+        self.combobox_year.place(x=275, y=80)
 
         # **************************************** row 4 ********************************************
-        boxes = [combobox_days, combobox_month, combobox_year]
+        boxes = [self.combobox_days, self.combobox_month, self.combobox_year]
         button_edit = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray',
                                 command=lambda: self.insert_user(entry_last_name,
                                                                  self.entry_first_name,

@@ -1,14 +1,14 @@
 import tkinter as tk
 from tkinter import ttk
 
-from main import app
+    # from Main import app
 from src.TableItems import Goods
 
 
 class EditGoods(tk.Toplevel):
     def __init__(self, my_root):
         super().__init__(my_root)
-        self.view = app
+        # self.view = app
         self.current_month = self.entry_text = self.entry_goods = self.combobox_month = None
 
         self.init_ui()

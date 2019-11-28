@@ -22,8 +22,9 @@ from src.AddGoods import AddGoods
 from src.AddUser import AddUser
 from src.EditGoods import EditGoods
 from src.EditUser import EditUser
-from src.TableItems import User, Goods
+# from src import User, Goods
 from src.DatabaseEngine import DatabaseEngine
+from src.TableItems import User, Goods
 
 MONTH = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
          'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
@@ -91,7 +92,7 @@ class Main(tk.Frame):
 
         # **************************** Кнопки под ЛЕВОЙ таблицей ********************************************
         button_add_user = tk.Button(text='Добавить клиента',
-                                    command=lambda: show_add_user_window(self.root, self.main_window_state))
+                                    command=lambda: self.show_add_user_window(self.root, self.main_window_state))
         button_add_user.place(x=20, y=420)
 
         button_edit_user = tk.Button(text='Редактировать',
@@ -154,18 +155,18 @@ class Main(tk.Frame):
         self.table_goods.pack(side='left')
 
         # ******************************************* Конструируем 'Меню' *****************************************
-        menu_bar = tk.Menu(self.root)
-        self.root.config(menu=menu_bar)
+        self.menu_bar = tk.Menu(self.root)
+        self.root.config(menu=self.menu_bar)
 
         # 'Файл'
-        file_menu = tk.Menu(menu_bar, tearoff=0)
+        file_menu = tk.Menu(self.menu_bar, tearoff=0)
         file_menu.add_command(label="Открыть...")
         file_menu.add_command(label="Сохранить...")
         file_menu.add_command(label="Выход", command=self.on_exit)
         self.menu_bar.add_cascade(label='Файл', menu=file_menu)
 
         # 'Редактировать'
-        edit_menu = tk.Menu(menu_bar, tearoff=0)
+        edit_menu = tk.Menu(self.menu_bar, tearoff=0)
         edit_menu.add_command(label='Добавить клиента', command=lambda: AddUser(self.root))
         edit_menu.add_command(label='Добавить товар', command=lambda: self.add_goods())
 
@@ -177,13 +178,13 @@ class Main(tk.Frame):
         self.menu_bar.add_cascade(label='Редактировать', menu=edit_menu)
 
         # 'График'
-        graphic_menu = tk.Menu(menu_bar, tearoff=0)
+        graphic_menu = tk.Menu(self.menu_bar, tearoff=0)
         graphic_menu.add_command(label='График товаров')
         graphic_menu.add_command(label='Диаграмма товаров')
         self.menu_bar.add_cascade(label='График', menu=graphic_menu)
 
         # 'Справка'
-        help_menu = tk.Menu(menu_bar, tearoff=0)
+        help_menu = tk.Menu(self.menu_bar, tearoff=0)
         help_menu.add_command(label='О программе')
         self.menu_bar.add_cascade(label='Справка', menu=help_menu)
 
@@ -243,8 +244,8 @@ class Main(tk.Frame):
             self.view_table_user_goods(user_id)
         self.update_total_goods_per_month(self.combobox_month.get())
 
-    def show_add_user_window(self, dict_sate):
-        AddUser(self.root, dict_sate)
+    def show_add_user_window(self, my_root, dict_sate):
+        AddUser(my_root, dict_sate)
 
     def show_edit_user_window(self, my_root, dict_state):
         if self.table_users.selection() != ():
@@ -271,7 +272,7 @@ class Main(tk.Frame):
     def reset_main_window_state(self):
         self.main_window_state['user_id'] = ''
         self.main_window_state['user_name'] = ''
-        self.main_window_stae['month'] = ['', '']
+        self.main_window_state['month'] = ['', '']
         self.main_window_state['goods'] = 0
 
     def on_exit(self):

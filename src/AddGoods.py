@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from main import app
+# from Main import *
 
 
 class AddGoods(tk.Toplevel):
@@ -10,7 +10,7 @@ class AddGoods(tk.Toplevel):
         self.label_client_info = \
             self.entry_goods = \
             self.combobox_month = None
-        self.view = app
+        # self.view = app
         self.init_ui()
         self.grab_set()
 
