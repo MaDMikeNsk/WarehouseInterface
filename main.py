@@ -258,21 +258,21 @@ class Main(tk.Frame):
 
             AddGoods(self.root)
 
-    def edit_goods(self):
-        if self.current_selected_user_id is not None:
+    def edit_goods(self, dict_state: dict):
+        if dict_state['user_id'] != '':
             if self.table_goods.selection() != ():
                 # Нужно эти переменные передать в EditGoods в кач-ве переменных(возможно, они могут быть локальными)
                 for item in self.table_goods.selection():
                     self.current_selected_month = self.table_goods.item(item)['values'][2]
                     self.current_selected_goods = self.table_goods.item(item)['values'][3]
 
-            EditGoods(self.root)
+            EditGoods(self.root, dict_state)
 
     def reset_main_window_state(self):
-        self.main_window_state['user_id'] = None
-        self.main_window_state['user_name'] = None
-        self.main_window_stae['month'] = None
-        self.main_window_state['goods'] = None
+        self.main_window_state['user_id'] = ''
+        self.main_window_state['user_name'] = ''
+        self.main_window_stae['month'] = ['', '']
+        self.main_window_state['goods'] = 0
 
     def on_exit(self):
         self.quit()
