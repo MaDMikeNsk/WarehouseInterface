@@ -67,7 +67,7 @@ class AddGoods(tk.Toplevel):
             self.view.db.show_add_goods_window(user_id, combobox_month.get(), int(entry_goods.get()))
             self.view.show_table_user_goods(user_id)
             self.destroy()
-        self.view.update_total_goods_per_month(self.view.combobox_month.get())
+        self.view.update_label_total_goods_per_month(self.view.combobox_month.get())
 
     def cancel(self):
         self.destroy()

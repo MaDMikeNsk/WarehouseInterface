@@ -2,6 +2,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from src.TableItems import User, Goods
 
+MONTH = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+         'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+
 
 class DatabaseEngine:
     def __init__(self):
@@ -10,11 +13,10 @@ class DatabaseEngine:
         self.session = session()
 
     def record_user(self, user):
-        import Main
         # Добавляем пользователя в базу user и 12 записей в таблицу goods по его ID
         self.session.add(user)
         for x in range(12):
-            goods = Goods(user.id, Main.MONTH[x], goods=25)
+            goods = Goods(user.id, MONTH[x], goods=25)
             self.record_goods(goods)
         self.session.commit()
 

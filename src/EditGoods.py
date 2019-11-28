@@ -1,9 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
 
-    # from Main import app
-from src.TableItems import Goods
-
 
 class EditGoods(tk.Toplevel):
     def __init__(self, my_root, main_window_current_state):
@@ -44,6 +41,7 @@ class EditGoods(tk.Toplevel):
         label_goods.place(x=30, y=90)
 
         self.entry_text = tk.StringVar()
+
         self.entry_goods = tk.Entry(self, textvariable=self.entry_text, width=7)
 
         if self.view.table_goods.selection() != ():
@@ -87,7 +85,7 @@ class EditGoods(tk.Toplevel):
         if is_int(entry_goods.get()):
             self.view.db.update_goods(user_id, combobox_month.get(), entry_goods.get())
             self.view.show_table_user_goods(user_id)
-            self.view.update_total_goods_per_month(self.view.combobox_month.get())
+            self.view.update_label_total_goods_per_month(self.view.combobox_month.get())
             self.destroy()
 
     def cancel(self):
