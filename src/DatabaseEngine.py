@@ -13,12 +13,14 @@ class DatabaseEngine:
         self.session = session()
 
     def record_user(self, user):
-        # Добавляем пользователя в базу user и 12 записей в таблицу goods по его ID
+        # Добавляем пользователя user в таблицу User...
         self.session.add(user)
+        self.session.commit()
+
+        # ...и 12 записей в таблицу Goods по его ID
         for x in range(12):
             goods = Goods(user.id, MONTH[x], goods=25)
             self.record_goods(goods)
-        self.session.commit()
 
     def delete_user(self, user_id):
         for user in self.session.query(User).filter(User.id == user_id).all():
