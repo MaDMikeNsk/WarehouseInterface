@@ -229,16 +229,17 @@ class Main(tk.Frame):
         AddUser(my_root)
 
     def show_edit_user_window(self, my_root: tk.Tk):
-        # Полготавливаем данные для передачи в класс EditUser, берем их
+        # Подготавливаем данные для передачи в класс EditUser
         if self.table_users.selection() != ():
-            first_name = last_name = birthday = ''
-            keys = ['last_name', 'first_name', 'day', 'month', 'year']
+            user_id = first_name = last_name = birthday = ''
+            keys = ['user_id', 'last_name', 'first_name', 'day', 'month', 'year']
             for record in self.table_users.selection():
+                user_id = self.table_users.item(record)['values'][0]
                 first_name = self.table_users.item(record)['values'][1]
                 last_name = self.table_users.item(record)['values'][2]
                 birthday = self.table_users.item(record)['values'][3]
             birthday_list = birthday.split('/')
-            values = [first_name, last_name] + birthday_list
+            values = [user_id, first_name, last_name] + birthday_list
 
             # Формируем данные и вызываем окно EditUser
             current_user_info = dict(zip(keys, values))
@@ -273,7 +274,8 @@ class Main(tk.Frame):
     # ********************** = РАБОТА С БАЗОЙ ДАННЫХ + ОБНОВЛЕНИЕ ДАННЫХ ИТОГО И СОСТОЯНИЯ ГЛАВНОГО ОКНА ************
 
     def add_user_to_db(self, user_first_name: str, user_last_name: str, birthday: str):
-        user = User(user_last_name, user_first_name, birthday)
+
+        user = User(user_last_name.strip(), user_first_name.strip(), birthday)
         self.db.record_user(user)
 
         # Перерисовываем таблицу пользователей обновляем данные ИТОГО
@@ -299,8 +301,9 @@ class Main(tk.Frame):
             self.update_label_total_goods_per_month()
             self.show_table_users()
 
-    def edit_user_in_db(self):
-        pass
+    def edit_user_in_db(self, user_id, first_name, last_name, birthday):
+        self.db.update_user(user_id, first_name, last_name, birthday)
+        self.show_table_users()
 
     def add_goods_to_db(self):
         pass
@@ -365,17 +368,17 @@ class AddUser(tk.Toplevel):
         # **************************************** row 4 ********************************************
         self.user_birthday = [self.combobox_days.get(), self.combobox_month.get(), self.combobox_year.get()]
 
-        button_add = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray',
-                               command=lambda: self.on_click())
-        button_add.place(x=40, y=120)
+        self.button_add = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray',
+                                    command=lambda: self.on_click())
+        self.button_add.place(x=40, y=120)
 
         button_cancel = tk.Button(self, text='Отмена', padx=5, pady=5, width=15, bg='light gray',
                                   command=lambda: self.destroy())
         button_cancel.place(x=200, y=120)
 
     def on_click(self):
-        user_first_name = self.entry_first_name.get()
-        user_last_name = self.entry_last_name.get()
+        user_first_name = self.entry_first_name.get().strip()
+        user_last_name = self.entry_last_name.get().strip()
 
         if user_first_name.isalpha() and user_last_name.isalpha():
             birthday = self.combobox_days.get() + '/' + \
@@ -386,7 +389,7 @@ class AddUser(tk.Toplevel):
 
 
 class EditUser(AddUser):
-    def __init__(self, my_root: tk.Tk, selected_user_data: dict):  # ['last_name', 'first_name', 'day', 'month', 'year']
+    def __init__(self, my_root: tk.Tk, selected_user_data: dict):
         super().__init__(my_root)
         self.selected_user_data = selected_user_data
         self.init_ui()
@@ -409,6 +412,21 @@ class EditUser(AddUser):
         self.combobox_days.current(DAYS.index(int(self.selected_user_data['day'])))
         self.combobox_month.current(MONTH.index(self.selected_user_data['month']))
         self.combobox_year.current(YEARS.index(int(self.selected_user_data['year'])))
+
+        self.button_add.config(text = 'Редактировать', command=self.on_click)
+
+    def on_click(self):
+        # Формируем данные для передачи в главное окно
+        user_id = self.selected_user_data['user_id']
+        first_name = self.entry_first_name.get()
+        last_name = self.entry_last_name.get()
+        birthday = self.combobox_days.get() + '/' + self.combobox_month.get() + '/' + self.combobox_year.get()
+
+        if first_name + last_name != '':
+            self.main_window.edit_user_in_db(user_id, first_name, last_name, birthday)
+            self.main_window.show_table_users()
+            self.destroy()
+
 
 
 

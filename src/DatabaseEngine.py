@@ -22,6 +22,13 @@ class DatabaseEngine:
             goods = Goods(user.id, MONTH[x], goods=25)
             self.record_goods(goods)
 
+    def update_user(self, user_id, first_name, last_name, birthday):
+        for user in self.session.query(User).filter(User.id == user_id):
+            user.first_name = first_name
+            user.last_name = last_name
+            user.birthday = birthday
+        self.session.commit()
+
     def delete_user(self, user_id):
         for user in self.session.query(User).filter(User.id == user_id).all():
             self.session.delete(user)
@@ -34,7 +41,7 @@ class DatabaseEngine:
     def reset_goods(self, goods_id):
         for goods in self.session.query(Goods).filter(Goods.id == goods_id).all():
             goods.goods = 0
-            self.session.commit()
+        self.session.commit()
 
     def delete_goods(self, user_id):
         for goods in self.session.query(Goods).filter(Goods.user_id == user_id).all():
@@ -49,3 +56,4 @@ class DatabaseEngine:
     def update_goods(self, user_id, month, goods):
         for record in self.session.query(Goods).filter(Goods.user_id == user_id, Goods.month == month).all():
             record.goods = goods
+        self.session.commit()
