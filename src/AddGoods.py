@@ -64,8 +64,8 @@ class AddGoods(tk.Toplevel):
                 return s.isdigit()
 
         if is_int(entry_goods.get()) and self.view.current_selected_user_id is not None:
-            self.view.db.create_add_goods_window(user_id, combobox_month.get(), int(entry_goods.get()))
-            self.view.show_table_user_goods(user_id)
+            self.view.db.display_add_goods_window(user_id, combobox_month.get(), int(entry_goods.get()))
+            self.view.display_table_user_goods(user_id)
             self.destroy()
         self.view.update_label_total_goods_per_month(self.view.combobox_month.get())
 

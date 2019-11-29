@@ -39,10 +39,14 @@ class Main(tk.Frame):
             self.arrow_image = \
             self.graphic_image = \
             self.diagram_image = None
-        self.main_window_current_state = {'user_id': '', 'user_name': ['', ''], 'month': '', 'goods': 0}
+        self.main_window_current_state = {'user_id': '',          # user_id
+                                          'user_name': [],        # [first_name, last_name]
+                                          'birthday': [],         # [day: str, month: str, year: str]
+                                          'selected_month': '',   # selected month in table 'Goods'
+                                          'goods_amount': 0}      # goods amount in selected month
 
         self.init_main()
-        self.show_table_users()
+        self.display_table_users()
 
     def init_main(self):
         # ==============================================================================================================
@@ -88,7 +92,7 @@ class Main(tk.Frame):
 
         self.table_users.pack(side='left')
 
-        # Scrollbar <ttk.Scrollbar> on frame_users
+        # Scrollbar on frame_users
         vsb = ttk.Scrollbar(frame_users, orient="vertical", command=self.table_users.yview)
         vsb.pack(side='right', fill='y')
         self.table_users.configure(yscrollcommand=vsb.set)
@@ -97,10 +101,10 @@ class Main(tk.Frame):
         #                                      КНОПКИ ПОД ТАБЛИЦЕЙ ПОЛЬЗОВАТЕЛЕЙ
         # ==============================================================================================================
 
-        button_add_user = tk.Button(text='Добавить клиента', command=lambda: self.create_add_user_window())
+        button_add_user = tk.Button(text='Добавить клиента', command=lambda: self.display_add_user_window())
         button_add_user.place(x=20, y=420)
 
-        button_edit_user = tk.Button(text='Редактировать', command=lambda: self.create_edit_user_window())
+        button_edit_user = tk.Button(text='Редактировать', command=lambda: self.display_edit_user_window())
         button_edit_user.place(x=150, y=420)
 
         button_delete_user = tk.Button(text='Удалить запись', command=lambda: self.delete_user_from_db())
@@ -131,11 +135,10 @@ class Main(tk.Frame):
         #                                        КНОПКИ ПОД ТАБЛИЦЕЙ ТОВАРОВ
         # ==============================================================================================================
 
-        button_add_goods = tk.Button(text='Добавить товар',
-                                     command=lambda: self.create_add_goods_window(self.root))
+        button_add_goods = tk.Button(text='Добавить товар', command=lambda: self.display_add_goods_window())
         button_add_goods.place(x=650, y=360)
 
-        button_edit_goods = tk.Button(text='Редактировать', command=lambda: self.create_edit_goods_window(self.root))
+        button_edit_goods = tk.Button(text='Редактировать', command=lambda: self.create_edit_goods_window())
         button_edit_goods.place(x=750, y=360)
 
         button_delete_goods = tk.Button(text='Обнулить  запись', command=self.reset_goods)
@@ -146,9 +149,7 @@ class Main(tk.Frame):
         # ==============================================================================================================
 
         self.arrow_image = tk.PhotoImage(file='image/arrow.png')  # Allowed PPM, PNG, JPEG, GIF, TIFF, and BMP.
-        button_show = tk.Button(command=lambda: [self.show_table_user_goods(self.table_users.item(item)['values'][0])
-                                                 for item in self.table_users.selection()], image=self.arrow_image,
-                                bd=0)
+        button_show = tk.Button(command=lambda: self.on_click_arrow_button(), image=self.arrow_image, bd=0)
         button_show.place(x=525, y=110)
 
         self.graphic_image = tk.PhotoImage(file='image/graphic.png')
@@ -179,17 +180,17 @@ class Main(tk.Frame):
         file_menu = tk.Menu(self.menu_bar, tearoff=0)
         file_menu.add_command(label="Открыть...")
         file_menu.add_command(label="Сохранить...")
-        file_menu.add_command(label="Выход", command=self.quit())
+        file_menu.add_command(label="Выход", command=self.quit)
         self.menu_bar.add_cascade(label='Файл', menu=file_menu)
 
         # 'Редактировать'
         edit_menu = tk.Menu(self.menu_bar, tearoff=0)
-        edit_menu.add_command(label='Добавить клиента', command=lambda: self.create_add_user_window())
+        edit_menu.add_command(label='Добавить клиента', command=lambda: self.display_add_user_window())
         edit_menu.add_command(label='Добавить товар')
 
         # Конструируем подменю меню 'Редактировать'
         edit_choice = tk.Menu(edit_menu, tearoff=0)
-        edit_choice.add_command(label='Данные клиента', command=lambda: self.create_edit_user_window())
+        edit_choice.add_command(label='Данные клиента', command=lambda: self.display_edit_user_window())
         edit_choice.add_command(label='Товар клиента')
         edit_menu.add_cascade(label='Редактировать', menu=edit_choice)
         self.menu_bar.add_cascade(label='Редактировать', menu=edit_menu)
@@ -228,14 +229,43 @@ class Main(tk.Frame):
         else:
             self.label_total_goods_per_month.config(text='0')
 
+    # ************************************* ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ **************************************
+    def on_click_arrow_button(self):
+        if self.table_users.selection() != ():
+            name = []
+            for item in self.table_users.selection():
+                # Обновляем данные текущего состояния главного окна
+                uid = self.table_users.item(item)['values'][0]
+                #name.append(self.table_users.item(item)['values'][1])
+                #name.append(self.table_users.item(item)['values'][2])
+                temp_birthday = self.table_users.item(item)['values'][3]
+                birthday = temp_birthday.split('/')
+                self.update_main_window_current_state(user_id=uid, user_name=name, birthday=birthday)
+
+                # Отображаем таблицу
+                self.display_table_user_goods(uid)
+                print(self.main_window_current_state)
+
+    def update_main_window_current_state(self, user_id: str = None,
+                                         user_name: list = None,
+                                         birthday: list = None,
+                                         selected_month: str = None,
+                                         goods_amount: int = None):
+        self.main_window_current_state['user_id'] = user_id
+        self.main_window_current_state['user_name'] = user_name
+        self.main_window_current_state['birthday'] = birthday
+        self.main_window_current_state['selected_month'] = selected_month
+        self.main_window_current_state['goods_amount'] = goods_amount
+
+
     # ************************************* ФУНКЦИИ ДЛЯ ОТОБРАЖЕНИЯ ТАБЛИЦ **************************************
 
-    def show_table_users(self):
+    def display_table_users(self):
         [self.table_users.delete(i) for i in self.table_users.get_children()]
         [self.table_users.insert('', 'end', values=(user.id, user.last_name, user.first_name, user.birthday))
          for user in self.db.session.query(User).filter().all()]
 
-    def show_table_user_goods(self, user_id: str):
+    def display_table_user_goods(self, user_id: str):
         [self.table_goods.delete(i) for i in self.table_goods.get_children()]
         [self.table_goods.insert('', 'end', values=(goods.id, goods.user_id, goods.month, goods.goods))
          for goods in self.db.session.query(Goods).filter(Goods.user_id == user_id).all()]
@@ -247,35 +277,34 @@ class Main(tk.Frame):
 
     # ********************* ОБРАБОТКА НАЖАТИЯ КНОПОК В ГЛАВНОМ ОКНЕ = ОТОБРАЖЕНИЕ НОВЫХ ОКОН ***********************
 
-    def create_add_user_window(self):
+    def display_add_user_window(self):
         AddUser(self.root)
 
-    def create_edit_user_window(self):
+    def display_edit_user_window(self):
         # Подготавливаем данные для передачи в класс EditUser
         if self.table_users.selection() != ():
             user_id = first_name = last_name = birthday = ''
-            keys = ['user_id', 'last_name', 'first_name', 'day', 'month', 'year']
-            for record in self.table_users.selection():
-                user_id = self.table_users.item(record)['values'][0]
-                first_name = self.table_users.item(record)['values'][1]
-                last_name = self.table_users.item(record)['values'][2]
-                birthday = self.table_users.item(record)['values'][3]
-            birthday_list = birthday.split('/')
-            values = [user_id, first_name, last_name] + birthday_list
+            for item in self.table_users.selection():
+                self.main_window_current_state['user_id'] = self.table_users.item(item)['values'][0]
+                self.main_window_current_state['user_name'].append(self.table_users.item(item)['values'][2])
+                self.main_window_current_state['user_name'].append(self.table_users.item(item)['values'][1])
+                birthday = self.table_users.item(item)['values'][3]
+                self.main_window_current_state['birthday'] = birthday.split('/')
 
-            # Формируем данные и вызываем окно EditUser
-            current_user_info = dict(zip(keys, values))
-            print(current_user_info)
-            EditUser(self.root, current_user_info)
+            print(self.main_window_current_state)
+            EditUser(self.root, self.main_window_current_state)
 
-    """ def create_add_goods_window(self, dict_state: dict):
-        if self.current_selected_user_id is not None:
-            if self.table_goods.selection() != ():
+    def display_add_goods_window(self):
+        if self.main_window_current_state['user_id'] != '':
+            if self.table_goods.selection() == ():
+                AddGoods(self.root, current_user_info=None)
+            else:
                 for item in self.table_goods.selection():
-                    self.main_window_current_state['month'] = self.table_goods.item(item)['values'][2]
-            AddGoods(self.root, dict_state)
+                    self.main_window_current_state['selected_month'] = self.table_goods.item(item)['values'][2]
+                    self.main_window_current_state['goods_amount'] = int(self.table_goods.item(item)['values'][3])
+                AddGoods(self.root, self.main_window_current_state)
 
-    def create_edit_goods_window(self, dict_state: dict):
+    """ def display_edit_goods_window(self, dict_state: dict):
         if dict_state['user_id'] != '':
             if self.table_goods.selection() != ():
                 # Нужно эти переменные передать в EditGoods в кач-ве переменных(возможно, они могут быть локальными)
@@ -300,7 +329,7 @@ class Main(tk.Frame):
         self.db.record_user(user)
 
         # Перерисовываем таблицу пользователей обновляем данные ИТОГО
-        self.show_table_users()
+        self.display_table_users()
         self.update_label_total_user_info()
         self.update_label_total_goods_per_month()
 
@@ -320,11 +349,11 @@ class Main(tk.Frame):
             # Пересчитываем параметры ИТОГО и выводим обновлённую таблицу пользователей
             self.update_label_total_user_info()
             self.update_label_total_goods_per_month()
-            self.show_table_users()
+            self.display_table_users()
 
     def edit_user_in_db(self, user_id, first_name, last_name, birthday):
         self.db.update_user(user_id, first_name, last_name, birthday)
-        self.show_table_users()
+        self.display_table_users()
 
     def add_goods_to_db(self):
         pass
@@ -337,7 +366,7 @@ class Main(tk.Frame):
             goods_id = self.table_goods.item(goods)['values'][0]
             user_id = self.table_goods.item(goods)['values'][1]
             self.db.reset_goods(goods_id)
-            self.show_table_user_goods(user_id)
+            self.display_table_user_goods(user_id)
         self.update_label_total_goods_per_month()
 
 
@@ -408,42 +437,42 @@ class AddUser(tk.Toplevel):
 
 
 class EditUser(AddUser):
-    def __init__(self, my_root: tk.Tk, selected_user_data: dict):
+    def __init__(self, my_root: tk.Tk, current_user_info: dict):
         super().__init__(my_root)
-        self.selected_user_data = selected_user_data
+        self.current_user_info = current_user_info
         self.init_ui()
 
     def init_ui(self):
         self.title('Редактировать...')
-        # ************ ПЕРЕОПРЕДЕЛИМ СОСТОЯНИЕ ПОЛЕЙ ВВОДА, ИСПОЛЬЗУЯ ПЕРЕМЕННУЮ self.selected_user_data ***********
+        # ************ ПЕРЕОПРЕДЕЛИМ СОСТОЯНИЕ ПОЛЕЙ ВВОДА, ИСПОЛЬЗУЯ ПЕРЕМЕННУЮ self.current_user_info ***********
 
         # Устанавливаем имя
         self.entry_first_name_text = tk.StringVar()
         self.entry_first_name.configure(textvariable=self.entry_first_name_text)
-        self.entry_first_name_text.set(self.selected_user_data['first_name'])
+        self.entry_first_name_text.set(self.current_user_info['user_name'][0])
 
         # Устанавливаем фамилию
         self.entry_last_name_text = tk.StringVar()
         self.entry_last_name.configure(textvariable=self.entry_last_name_text)
-        self.entry_last_name_text.set(self.selected_user_data['last_name'])
+        self.entry_last_name_text.set(self.current_user_info['user_name'][1])
 
         # Устанавливаем дату рождения
-        self.combobox_days.current(DAYS.index(int(self.selected_user_data['day'])))
-        self.combobox_month.current(MONTH.index(self.selected_user_data['month']))
-        self.combobox_year.current(YEARS.index(int(self.selected_user_data['year'])))
+        self.combobox_days.current(DAYS.index(int(self.current_user_info['birthday'][0])))
+        self.combobox_month.current(MONTH.index(self.current_user_info['birthday'][1]))
+        self.combobox_year.current(YEARS.index(int(self.current_user_info['birthday'][2])))
 
         self.button_add.config(text = 'Редактировать', command=self.on_click)
 
     def on_click(self):
         # Формируем данные для передачи в главное окно
-        user_id = self.selected_user_data['user_id']
+        user_id = self.current_user_info['user_id']
         first_name = self.entry_first_name.get()
         last_name = self.entry_last_name.get()
         birthday = self.combobox_days.get() + '/' + self.combobox_month.get() + '/' + self.combobox_year.get()
 
         if first_name + last_name != '':
             self.main_window.edit_user_in_db(user_id, first_name, last_name, birthday)
-            self.main_window.show_table_users()
+            self.main_window.display_table_users()
             self.destroy()
 
 

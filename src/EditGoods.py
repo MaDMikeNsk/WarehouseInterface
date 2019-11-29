@@ -84,7 +84,7 @@ class EditGoods(tk.Toplevel):
 
         if is_int(entry_goods.get()):
             self.view.db.update_goods(user_id, combobox_month.get(), entry_goods.get())
-            self.view.show_table_user_goods(user_id)
+            self.view.display_table_user_goods(user_id)
             self.view.update_label_total_goods_per_month(self.view.combobox_month.get())
             self.destroy()
 
