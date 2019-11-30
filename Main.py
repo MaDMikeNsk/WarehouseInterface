@@ -41,11 +41,7 @@ class Main(tk.Frame):
             self.arrow_image = \
             self.graphic_image = \
             self.diagram_image = None
-        self.main_window_state = {'user_id': '',  # user_id
-                                  'user_name': [],  # (first_name, last_name)
-                                  'birthday': [],  # [day: str, month: str, year: str]
-                                  'selected_month': '',  # selected month in table 'Goods'
-                                  'goods_amount': 0}     # goods amount in selected month
+        self.main_window_state = {'user_id': '', 'goods_visible': False}
 
         self.init_main()
         self.display_table_users()
@@ -208,13 +204,47 @@ class Main(tk.Frame):
         help_menu.add_command(label='О программе')
         self.menu_bar.add_cascade(label='Справка', menu=help_menu)
 
-        # ***************************** ВЫВОДИМ ИНФОРМАЦИЮ 'ИТОГО' *****************************************************
-
+        # Выводим информацию 'ИТОГО'
         self.update_label_total_user_info()
         self.update_label_total_goods_per_month()
 
-    # ********************************* ФУНКЦИИ ОБНОВЛЕНИЯ ДАННЫХ 'ИТОГО' **********************************************
+    # ==================================================================================================================
+    #                                              ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+    # ==================================================================================================================
 
+    def on_click_arrow_button(self):
+        selected_user = self.get_data_from_user_selection()
+        self.display_table_user_goods(selected_user['user_id'])
+        self.main_window_state['user_id'] = selected_user['user_id']
+        self.main_window_state['goods_visible'] = True
+        print(self.main_window_state)
+
+    def set_main_window_state(self, user_id=None, is_display=None):
+        self.main_window_state['user_id'] = user_id
+        self.main_window_state['goods_visible'] = is_display
+
+    def get_data_from_user_selection(self) -> dict:
+        if self.table_users.selection() != ():
+            data = {'user_id': None, 'user_name': None, 'birthday': None}
+            for item in self.table_users.selection():
+                data['user_id'] = self.table_users.item(item)['values'][0]
+                data['user_name'] = [self.table_users.item(item)['values'][2], self.table_users.item(item)['values'][1]]
+                data['birthday'] = self.table_users.item(item)['values'][3].split('/')
+            return data
+
+    def get_data_from_goods_selection(self) -> dict:
+        if self.table_goods.selection() != ():
+            data = {'user_id': None, 'month': None, 'goods': None}
+            for item in self.table_goods.selection():
+                data['user_id'] = self.table_users.item(item)['values'][1]
+                data['month'] = self.table_users.item(item)['values'][2]
+                data['goods'] = self.table_users.item(item)['values'][3]
+            return data
+    # ==================================================================================================================
+    #                                          ФУНКЦИИ ОБНОВЛЕНИЯ ДАННЫХ 'ИТОГО'
+    # ==================================================================================================================
+
+    # Реакция на выбор месяца для вывода 'ИТОГО'
     def callback(self, event):
         self.update_label_total_goods_per_month()
 
@@ -231,40 +261,9 @@ class Main(tk.Frame):
         else:
             self.label_total_goods_per_month.config(text='0')
 
-    # ************************************* ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ **************************************
-    def on_click_arrow_button(self):
-        self.update_main_window_state()
-        print(self.main_window_state)
-        self.display_table_user_goods(self.main_window_state['user_id'])
-
-    def update_main_window_state(self):
-        if self.table_users.selection() != ():
-            name = []
-            for item in self.table_users.selection():
-                self.main_window_state['user_id'] = self.table_users.item(item)['values'][0]
-                name.append(self.table_users.item(item)['values'][2])
-                name.append(self.table_users.item(item)['values'][1])
-                self.main_window_state['user_name'] = name
-                birthday = self.table_users.item(item)['values'][3]
-                self.main_window_state['birthday'] = birthday.split('/')
-                if self.table_goods.selection != ():
-                    for record in self.table_goods.selection():
-                        self.main_window_state['selected_month'] = self.table_goods.item(record)['values'][2]
-                        self.main_window_state['goods_amount'] = int(self.table_goods.item(record)['values'][3])
-
-    """def set_main_window_current_state(self, user_id: str = None,
-                                      user_name: list = None,
-                                      birthday: list = None,
-                                      selected_month: str = None,
-                                      goods_amount: int = None):
-        self.main_window_current_state['user_id'] = user_id
-        self.main_window_current_state['user_name'] = user_name
-        self.main_window_current_state['birthday'] = birthday
-        self.main_window_current_state['selected_month'] = selected_month
-        self.main_window_current_state['goods_amount'] = goods_amount"""
-
-
-    # ************************************* ФУНКЦИИ ДЛЯ ОТОБРАЖЕНИЯ ТАБЛИЦ **************************************
+    # ==================================================================================================================
+    #                                             ФУНКЦИИ ДЛЯ ОТОБРАЖЕНИЯ ТАБЛИЦ
+    # ==================================================================================================================
 
     def display_table_users(self):
         [self.table_users.delete(i) for i in self.table_users.get_children()]
@@ -276,65 +275,31 @@ class Main(tk.Frame):
         [self.table_goods.insert('', 'end', values=(goods.id, goods.user_id, goods.month, goods.goods))
          for goods in self.db.session.query(Goods).filter(Goods.user_id == user_id).all()]
 
-        # Изменяем состояние главного окна
-        self.main_window_state['user_id'] = user_id
-        for user in self.db.session.query(User).filter(User.id == user_id).all():
-            self.main_window_state['user_name'] = [user.last_name, user.first_name]
-
-    # ********************* ОБРАБОТКА НАЖАТИЯ КНОПОК В ГЛАВНОМ ОКНЕ = ОТОБРАЖЕНИЕ НОВЫХ ОКОН ***********************
+    # ==================================================================================================================
+    #                                    ФУНКЦИИ ДЛЯ ОБРАБОТКИ НАЖАТИЯ КНОПОК ПОД ТАБЛИЦАМИ
+    # ==================================================================================================================
 
     def display_add_user_window(self):
         AddUser(self.root)
 
     def display_edit_user_window(self):
-        # Подготавливаем данные для передачи в класс EditUser
         if self.table_users.selection() != ():
-            name = []
-            for item in self.table_users.selection():
-                self.main_window_state['user_id'] = self.table_users.item(item)['values'][0]
-
-                name.append(self.table_users.item(item)['values'][2])
-                name.append(self.table_users.item(item)['values'][1])
-                self.main_window_state['user_name'] = name
-                birthday = self.table_users.item(item)['values'][3]
-                self.main_window_state['birthday'] = birthday.split('/')
-
-            print(self.main_window_state)
-            EditUser(self.root, self.main_window_state)
+            selected_user = self.get_data_from_user_selection()
+            EditUser(self.root, selected_user)
 
     def display_add_goods_window(self):
-        if self.main_window_state['user_id'] != '':
-            if self.table_goods.selection() == ():
-                #AddGoods(self.root, current_user_info=None)
-                print()
-            else:
-                for item in self.table_goods.selection():
-                    self.main_window_state['selected_month'] = self.table_goods.item(item)['values'][2]
-                    self.main_window_state['goods_amount'] = int(self.table_goods.item(item)['values'][3])
-                #AddGoods(self.root, self.main_window_current_state)
+        if self.main_window_state['goods_visible']:
+            AddGoods(self.root, self.main_window_state)
 
-    """ def display_edit_goods_window(self, dict_state: dict):
-        if dict_state['user_id'] != '':
-            if self.table_goods.selection() != ():
-                # Нужно эти переменные передать в EditGoods в кач-ве переменных(возможно, они могут быть локальными)
-                for item in self.table_goods.selection():
-                    dict_state['month'] = self.table_goods.item(item)['values'][2]
-                    dict_state['goods'] = self.table_goods.item(item)['values'][3]
-            EditGoods(self.root, dict_state)"""
+    def display_edit_goods_window(self):
+        self.update_main_window_state()
+        EditGoods(self.root, self.main_window_state)
 
-    # Сбрасываем текущее состояние главного окна
-    def reset_main_window_state(self):
-        self.main_window_state['user_id'] = ''
-        self.main_window_state['user_name'] = []
-        self.main_window_state['birthday'] = []
-        self.main_window_state['selected_month'] = ''
-        self.main_window_state['goods_amount'] = 0
-
-    # **************************** ОБРАБОТКА НАЖАТИЯ КНОПОК В ДОЧЕРНИХ ОКНАХ = ************************************
-    # ********************** = РАБОТА С БАЗОЙ ДАННЫХ + ОБНОВЛЕНИЕ ДАННЫХ ИТОГО И СОСТОЯНИЯ ГЛАВНОГО ОКНА ************
+    # ==================================================================================================================
+    #                              ОБРАБОТКА НАЖАТИЯ КНОПОК В ДОЧЕРНИХ ОКНАХ - РАБОТА С БАЗОЙ ДАННЫХ
+    # ==================================================================================================================
 
     def add_user_to_db(self, user_first_name: str, user_last_name: str, birthday: str):
-
         user = User(user_last_name.strip(), user_first_name.strip(), birthday)
         self.db.record_user(user)
 
@@ -345,21 +310,27 @@ class Main(tk.Frame):
 
     def delete_user_from_db(self):
         if self.table_users.selection() != ():
-            # Получаем ID выделенного пользователя и удаляем записи в базах по этому ID
-            for item in self.table_users.selection():
-                user_id = self.table_users.item(item)['values'][0]
-                self.db.delete_user(user_id)
-                self.db.delete_goods(user_id)
+            # Получаем ID пользователя, которого выбрали в таблице
+            current_user = self.get_data_from_user_selection()
 
-                # Если отображалась таблица его товаров - удаляем её и обнуляем текущее состоянее главного окна
-                if self.main_window_state['user_id'] == user_id:
-                    [self.table_goods.delete(i) for i in self.table_goods.get_children()]
-                    self.reset_main_window_state()
+            # Удаляем из базы пользователя и все записи из 2-й таблицы по его ID
+            self.db.delete_user(current_user['user_id'])
+            self.db.delete_goods(current_user['user_id'])
+
+            # Если отображалась таблица его товаров - удаляем её и сбрасываем параметры main_window_state
+            if self.main_window_state['user_id'] == current_user['user_id']:
+                [self.table_goods.delete(i) for i in self.table_goods.get_children()]
+                # self.reset_main_window_state()
+
+                self.main_window_state['user_id'] = ''
+                self.main_window_state['goods_visible'] = False
 
             # Пересчитываем параметры ИТОГО и выводим обновлённую таблицу пользователей
             self.update_label_total_user_info()
             self.update_label_total_goods_per_month()
             self.display_table_users()
+
+            print(self.main_window_state)
 
     def edit_user_in_db(self, user_id, first_name, last_name, birthday):
         self.db.update_user(user_id, first_name, last_name, birthday)
@@ -372,15 +343,16 @@ class Main(tk.Frame):
         pass
 
     def reset_goods(self):
-        for goods in self.table_goods.selection():
-            goods_id = self.table_goods.item(goods)['values'][0]
-            user_id = self.table_goods.item(goods)['values'][1]
-            self.db.reset_goods(goods_id)
-            self.display_table_user_goods(user_id)
-        self.update_label_total_goods_per_month()
+        if self.table_goods.selection() != ():
+            self.update_main_window_state()
+            self.db.reset_goods(self.main_window_state['user_id'], self.main_window_state['selected_month'])
+            # Обновляем состояние гл окна, таблицу товаров и данные 'ИТОГО'
+            self.display_table_user_goods(self.main_window_state['user_id'])
+            self.main_window_state['selected_month'] = ''
+            self.main_window_state['goods_amount'] = 0
+            self.update_label_total_goods_per_month()
 
-    def display_edit_goods_window(self):
-        pass
+            print(self.main_window_state)
 
 
 class AddUser(tk.Toplevel):
@@ -474,7 +446,7 @@ class EditUser(AddUser):
         self.combobox_month.current(MONTH.index(self.current_user_info['birthday'][1]))
         self.combobox_year.current(YEARS.index(int(self.current_user_info['birthday'][2])))
 
-        self.button_add.config(text = 'Редактировать', command=self.on_click)
+        self.button_add.config(text='Редактировать', command=self.on_click)
 
     def on_click(self):
         # Формируем данные для передачи в главное окно
@@ -486,11 +458,8 @@ class EditUser(AddUser):
         if first_name + last_name != '':
             self.main_window.edit_user_in_db(user_id, first_name, last_name, birthday)
             self.main_window.display_table_users()
+            print(self.main_window.main_window_state)
             self.destroy()
-
-
-
-
 
 
 if __name__ == "__main__":

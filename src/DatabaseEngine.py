@@ -8,7 +8,7 @@ MONTH = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май',
 
 class DatabaseEngine:
     def __init__(self):
-        self.engine = create_engine('sqlite:///database/Warehouse.db', echo=True)
+        self.engine = create_engine('sqlite:///database/Warehouse.db', echo=False)
         session = sessionmaker(bind=self.engine)
         self.session = session()
 
@@ -38,8 +38,9 @@ class DatabaseEngine:
         self.session.add(goods)
         self.session.commit()
 
-    def reset_goods(self, goods_id):
-        for goods in self.session.query(Goods).filter(Goods.id == goods_id).all():
+    def reset_goods(self, user_id, month):
+        for goods in self.session.query(Goods).filter(Goods.user_id == user_id,
+                                                      Goods.month == month).all():
             goods.goods = 0
         self.session.commit()
 
