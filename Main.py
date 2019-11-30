@@ -17,6 +17,8 @@ c) менять диапазон времени для графиков -  ме�
 """
 import tkinter as tk
 from tkinter import ttk
+from typing import Any, Tuple
+
 from src.DatabaseEngine import DatabaseEngine
 from src.TableItems import User, Goods
 
@@ -39,11 +41,11 @@ class Main(tk.Frame):
             self.arrow_image = \
             self.graphic_image = \
             self.diagram_image = None
-        self.main_window_current_state = {'user_id': 'None',          # user_id
-                                          'user_name': [],        # [first_name, last_name]
+        self.main_window_current_state = {'user_id': '',          # user_id
+                                          'user_name': [],        # (first_name, last_name)
                                           'birthday': [],         # [day: str, month: str, year: str]
                                           'selected_month': '',   # selected month in table 'Goods'
-                                          'goods_amount': 0}      # goods amount in selected month
+                                          'goods_amount': ''}     # goods amount in selected month
 
         self.init_main()
         self.display_table_users()
@@ -138,7 +140,7 @@ class Main(tk.Frame):
         button_add_goods = tk.Button(text='Добавить товар', command=lambda: self.display_add_goods_window())
         button_add_goods.place(x=650, y=360)
 
-        button_edit_goods = tk.Button(text='Редактировать', command=lambda: self.create_edit_goods_window())
+        button_edit_goods = tk.Button(text='Редактировать', command=lambda: self.display_edit_goods_window())
         button_edit_goods.place(x=750, y=360)
 
         button_delete_goods = tk.Button(text='Обнулить  запись', command=self.reset_goods)
@@ -231,20 +233,11 @@ class Main(tk.Frame):
 
     # ************************************* ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ **************************************
     def on_click_arrow_button(self):
-        if self.table_users.selection() != ():
-            user_id = first_name = last_name = birthday = ''
-            name = []
-            for item in self.table_users.selection():
-                self.main_window_current_state['user_id'] = self.table_users.item(item)['values'][0]
-
-                name.append(self.table_users.item(item)['values'][2])
-                name.append(self.table_users.item(item)['values'][1])
-                self.main_window_current_state['user_name'] = name
-                birthday = self.table_users.item(item)['values'][3]
-                self.main_window_current_state['birthday'] = birthday.split('/')
-        self.display_table_user_goods(self.main_window_current_state['user_id'])
-
+        self.update_current_state_from_users_selection()
         print(self.main_window_current_state)
+        #self.display_table_user_goods()
+
+
 
     def update_current_state_from_users_selection(self):
         if self.table_users.selection() != ():
@@ -294,7 +287,6 @@ class Main(tk.Frame):
     def display_edit_user_window(self):
         # Подготавливаем данные для передачи в класс EditUser
         if self.table_users.selection() != ():
-            user_id = first_name = last_name = birthday = ''
             name = []
             for item in self.table_users.selection():
                 self.main_window_current_state['user_id'] = self.table_users.item(item)['values'][0]
@@ -311,12 +303,13 @@ class Main(tk.Frame):
     def display_add_goods_window(self):
         if self.main_window_current_state['user_id'] != '':
             if self.table_goods.selection() == ():
-                AddGoods(self.root, current_user_info=None)
+                #AddGoods(self.root, current_user_info=None)
+                print()
             else:
                 for item in self.table_goods.selection():
                     self.main_window_current_state['selected_month'] = self.table_goods.item(item)['values'][2]
                     self.main_window_current_state['goods_amount'] = int(self.table_goods.item(item)['values'][3])
-                AddGoods(self.root, self.main_window_current_state)
+                #AddGoods(self.root, self.main_window_current_state)
 
     """ def display_edit_goods_window(self, dict_state: dict):
         if dict_state['user_id'] != '':
@@ -383,6 +376,9 @@ class Main(tk.Frame):
             self.db.reset_goods(goods_id)
             self.display_table_user_goods(user_id)
         self.update_label_total_goods_per_month()
+
+    def display_edit_goods_window(self):
+        pass
 
 
 class AddUser(tk.Toplevel):
