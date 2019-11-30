@@ -149,16 +149,16 @@ class Main(tk.Frame):
         # ==============================================================================================================
 
         self.arrow_image = tk.PhotoImage(file='image/arrow.png')  # Allowed PPM, PNG, JPEG, GIF, TIFF, and BMP.
-        button_show = tk.Button(command=lambda: self.on_click_arrow_button(), image=self.arrow_image, bd=0)
-        button_show.place(x=525, y=110)
+        button_arrow = tk.Button(command=lambda: self.on_click_arrow_button(), image=self.arrow_image, bd=0)
+        button_arrow.place(x=525, y=110)
 
         self.graphic_image = tk.PhotoImage(file='image/graphic.png')
-        button_show = tk.Button(image=self.graphic_image, bd=0)
-        button_show.place(x=530, y=200)
+        button_graphic = tk.Button(image=self.graphic_image, bd=0)
+        button_graphic.place(x=530, y=200)
 
         self.diagram_image = tk.PhotoImage(file='image/diagram.png')
-        button_show = tk.Button(image=self.diagram_image, bd=0)
-        button_show.place(x=530, y=310)
+        button_diagram = tk.Button(image=self.diagram_image, bd=0)
+        button_diagram.place(x=530, y=310)
 
         # ==============================================================================================================
         #                                    КНОПКА ДЛЯ ОТОБРАЖЕНИЯ ДАННЫХ 'ИТОГО'
