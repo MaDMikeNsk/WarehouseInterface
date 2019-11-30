@@ -236,9 +236,9 @@ class Main(tk.Frame):
         if self.table_goods.selection() != ():
             data = {'user_id': None, 'month': None, 'goods': None}
             for item in self.table_goods.selection():
-                data['user_id'] = self.table_users.item(item)['values'][1]
-                data['month'] = self.table_users.item(item)['values'][2]
-                data['goods'] = self.table_users.item(item)['values'][3]
+                data['user_id'] = self.table_goods.item(item)['values'][1]
+                data['month'] = self.table_goods.item(item)['values'][2]
+                data['goods'] = self.table_goods.item(item)['values'][3]
             return data
     # ==================================================================================================================
     #                                          ФУНКЦИИ ОБНОВЛЕНИЯ ДАННЫХ 'ИТОГО'
@@ -344,12 +344,11 @@ class Main(tk.Frame):
 
     def reset_goods(self):
         if self.table_goods.selection() != ():
-            self.update_main_window_state()
-            self.db.reset_goods(self.main_window_state['user_id'], self.main_window_state['selected_month'])
+            current_goods = self.get_data_from_goods_selection()
+            self.db.reset_goods(current_goods['user_id'], current_goods['month'])
+
             # Обновляем состояние гл окна, таблицу товаров и данные 'ИТОГО'
             self.display_table_user_goods(self.main_window_state['user_id'])
-            self.main_window_state['selected_month'] = ''
-            self.main_window_state['goods_amount'] = 0
             self.update_label_total_goods_per_month()
 
             print(self.main_window_state)
