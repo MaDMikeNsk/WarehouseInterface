@@ -371,6 +371,9 @@ class Main(tk.Frame):
             self.display_table_user_goods(self.main_window_state['user_id'])
             self.update_label_total_goods_per_month()
 
+    def get_goods_amount(self, user_id, month):
+        return self.db.get_goods_amount(user_id, month)
+
 
 class AddUser(tk.Toplevel):
     def __init__(self, my_root):
@@ -558,20 +561,16 @@ class EditGoods(AddGoods):
         self.entry_goods.config(textvariable=self.entry_text)
         self.combobox_month.bind("<<ComboboxSelected>>", self.on_click_month_box)
 
-        # Применяем КОСТЫЛЬ для отображения значения goods в поле 'Товар'
-        # Обращаемся к базе данных из дочернего окна
+        # Определяем текст поля entry_goods
         if self.main_window.table_goods.selection() != ():
-            self.entry_text.set(self.main_window.db.get_goods_amount(self.main_window_data['user_id'],
+            self.entry_text.set(self.main_window.get_goods_amount(self.main_window_data['user_id'],
                                                                      self.main_window_data['month']))
         else:
-            self.entry_text.set(self.main_window.db.get_goods_amount(self.main_window_data['user_id'], 'Январь'))
+            self.entry_text.set(self.main_window.get_goods_amount(self.main_window_data['user_id'], 'Январь'))
 
-    # Костыль! Изменяем значение поля entry_goods при выборе месяца
     def on_click_month_box(self, event):
         current_month = self.combobox_month.get()
-        for item in self.main_window.db.session.query(Goods).filter(Goods.user_id == self.main_window_data['user_id'],
-                                                                    Goods.month == current_month).all():
-            self.entry_text.set(item.goods)
+        self.entry_text.set(self.main_window.get_goods_amount(self.main_window_data['user_id'], current_month))
 
     def on_click(self):
         goods_amount = self.entry_goods.get()
