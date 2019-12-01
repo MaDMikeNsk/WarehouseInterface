@@ -41,7 +41,9 @@ class Main(tk.Frame):
             self.arrow_image = \
             self.graphic_image = \
             self.diagram_image = None
-        self.main_window_state = {'user_id': '', 'goods_visible': False}
+        self.main_window_state = {'user_id': '',
+                                  'user_name': [],
+                                  'goods_visible': False}
 
         self.init_main()
         self.display_table_users()
@@ -133,7 +135,8 @@ class Main(tk.Frame):
         #                                        КНОПКИ ПОД ТАБЛИЦЕЙ ТОВАРОВ
         # ==============================================================================================================
 
-        button_add_goods = tk.Button(text='Добавить товар', command=lambda: self.display_add_goods_window())
+        button_add_goods = tk.Button(text='Добавить товар',
+                                     command=lambda: self.display_add_goods_window())
         button_add_goods.place(x=650, y=360)
 
         button_edit_goods = tk.Button(text='Редактировать', command=lambda: self.display_edit_goods_window())
@@ -211,16 +214,24 @@ class Main(tk.Frame):
     # ==================================================================================================================
     #                                              ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
     # ==================================================================================================================
+    @staticmethod
+    def is_int(string):
+        if string != '':
+            if string[0] in ('-', '+'):
+                return string[1:].isdigit()
+            return string.isdigit()
 
     def on_click_arrow_button(self):
         selected_user = self.get_data_from_user_selection()
         self.display_table_user_goods(selected_user['user_id'])
         self.main_window_state['user_id'] = selected_user['user_id']
+        self.main_window_state['user_name'] = selected_user['user_name']
         self.main_window_state['goods_visible'] = True
         print(self.main_window_state)
 
-    def set_main_window_state(self, user_id=None, is_display=None):
+    def set_main_window_state(self, user_id=None, user_name=None, is_display=None):
         self.main_window_state['user_id'] = user_id
+        self.main_window_state['user_name'] = user_name
         self.main_window_state['goods_visible'] = is_display
 
     def get_data_from_user_selection(self) -> dict:
@@ -234,7 +245,10 @@ class Main(tk.Frame):
 
     def get_data_from_goods_selection(self) -> dict:
         if self.table_goods.selection() != ():
-            data = {'user_id': None, 'month': None, 'goods': None}
+            data = {'user_id': None,
+                    'user_name': self.main_window_state['user_name'],
+                    'month': None,
+                    'goods': None}
             for item in self.table_goods.selection():
                 data['user_id'] = self.table_goods.item(item)['values'][1]
                 data['month'] = self.table_goods.item(item)['values'][2]
@@ -288,8 +302,12 @@ class Main(tk.Frame):
             EditUser(self.root, selected_user)
 
     def display_add_goods_window(self):
-        if self.main_window_state['goods_visible']:
-            AddGoods(self.root, self.main_window_state)
+        if self.main_window_state['user_id'] != '':
+            if self.table_goods.selection() != ():
+                current_user_info = self.get_data_from_goods_selection()
+                AddGoods(self.root, current_user_info)
+            else:
+                AddGoods(self.root, self.main_window_state)
 
     def display_edit_goods_window(self):
         self.update_main_window_state()
@@ -320,8 +338,6 @@ class Main(tk.Frame):
             # Если отображалась таблица его товаров - удаляем её и сбрасываем параметры main_window_state
             if self.main_window_state['user_id'] == current_user['user_id']:
                 [self.table_goods.delete(i) for i in self.table_goods.get_children()]
-                # self.reset_main_window_state()
-
                 self.main_window_state['user_id'] = ''
                 self.main_window_state['goods_visible'] = False
 
@@ -336,8 +352,10 @@ class Main(tk.Frame):
         self.db.update_user(user_id, first_name, last_name, birthday)
         self.display_table_users()
 
-    def add_goods_to_db(self):
-        pass
+    def update_goods_in_db(self, user_id, month, goods):
+        self.db.update_goods(user_id, month, goods)
+        self.update_label_total_goods_per_month()
+        self.display_table_user_goods(user_id)
 
     def edit_goods_in_db(self):
         pass
@@ -428,7 +446,7 @@ class EditUser(AddUser):
 
     def init_ui(self):
         self.title('Редактировать...')
-        # ************ ПЕРЕОПРЕДЕЛИМ СОСТОЯНИЕ ПОЛЕЙ ВВОДА, ИСПОЛЬЗУЯ ПЕРЕМЕННУЮ self.current_user_info ***********
+        # ************ ПЕРЕОПРЕДЕЛИМ СОСТОЯНИЕ ПОЛЕЙ ВВОДА, ИСПОЛЬЗУЯ ПЕРЕМЕННУЮ string.main_window_data ***********
 
         # Устанавливаем имя
         self.entry_first_name_text = tk.StringVar()
@@ -458,6 +476,74 @@ class EditUser(AddUser):
             self.main_window.edit_user_in_db(user_id, first_name, last_name, birthday)
             self.main_window.display_table_users()
             print(self.main_window.main_window_state)
+            self.destroy()
+
+
+class AddGoods(tk.Toplevel):
+    def __init__(self, my_root, main_window_data: dict):
+        super().__init__(my_root)
+        self.label_client_info = \
+            self.entry_goods = \
+            self.combobox_month = None
+        self.main_window_data = main_window_data
+        self.main_window = app  # Главное окно
+        self.init_ui()
+        self.grab_set()
+
+    def init_ui(self):
+        self.title('Добавить товар...')
+        self.geometry('360x180+400+400')
+        self.resizable(False, False)
+
+        # **************************************** row 1 ********************************************
+        label_client = tk.Label(self, text='КЛИЕНТ:')
+        label_client.place(x=30, y=20)
+
+        self.label_client_info = tk.Label(self, text=self.main_window_data['user_name'][0] + ' ' +
+                                                     self.main_window_data['user_name'][1],
+                                          font=('Adobe Clean Light', 11, 'italic'), fg='gray')
+        self.label_client_info.place(x=115, y=20)
+
+        # **************************************** row 2 ********************************************
+        label_goods = tk.Label(self, text='МЕСЯЦ:')
+        label_goods.place(x=30, y=55)
+
+        self.combobox_month = ttk.Combobox(self, values=MONTH, width=10)
+        if self.main_window.table_goods.selection() != ():
+            self.combobox_month.current(MONTH.index(self.main_window_data['month']))
+        else:
+            self.combobox_month.current(0)
+        self.combobox_month.place(x=115, y=55)
+
+        # **************************************** row 3 ********************************************
+        label_month = tk.Label(self, text='ТОВАР (+/-):')
+        label_month.place(x=30, y=90)
+
+        self.entry_goods = tk.Entry(self, width=13)
+        self.entry_goods.place(x=115, y=90)
+
+        # **************************************** row 4 ********************************************
+        button_edit = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray',
+                                command=lambda: self.on_click())
+        button_edit.place(x=40, y=130)
+
+        button_cancel = tk.Button(self, text='Отмена', padx=5, pady=5, width=15, bg='light gray',
+                                  command=lambda: self.destroy())
+        button_cancel.place(x=200, y=130)
+
+    def on_click(self):
+
+        def is_int(s):
+            if s != '':
+                if s[0] in ('-', '+'):
+                    return s[1:].isdigit()
+                return s.isdigit()
+
+        goods_amount = self.entry_goods.get()
+        if is_int(goods_amount):
+            self.main_window.update_goods_in_db(user_id=self.main_window_data['user_id'],
+                                                month=self.combobox_month.get(),
+                                                goods=int(goods_amount))
             self.destroy()
 
 

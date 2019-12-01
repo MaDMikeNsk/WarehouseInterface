@@ -5,7 +5,7 @@ from tkinter import ttk
 class EditGoods(tk.Toplevel):
     def __init__(self, my_root, main_window_current_state):
         super().__init__(my_root)
-        # self.view = app
+        # string.view = app
         self.current_month = self.entry_text = self.entry_goods = self.combobox_month = None
 
         self.init_ui()

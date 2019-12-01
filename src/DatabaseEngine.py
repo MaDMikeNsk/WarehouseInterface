@@ -53,8 +53,9 @@ class DatabaseEngine:
         for goods in self.session.query(Goods).filter(Goods.user_id == user_id, Goods.month == month).all():
             res = int(goods.goods) + goods_amount
             goods.goods = res
+        self.session.commit()
 
     def update_goods(self, user_id, month, goods):
         for record in self.session.query(Goods).filter(Goods.user_id == user_id, Goods.month == month).all():
-            record.goods = goods
+            record.goods = str(int(record.goods) + goods)
         self.session.commit()
