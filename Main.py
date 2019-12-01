@@ -381,7 +381,8 @@ class AddUser(tk.Toplevel):
             self.entry_last_name = \
             self.combobox_days = \
             self.combobox_month = \
-            self.combobox_year = None
+            self.combobox_year = \
+            self.button_add = None
         self.init_window()
         self.grab_set()
 
@@ -466,8 +467,6 @@ class EditUser(AddUser):
         self.combobox_month.current(MONTH.index(self.current_user_info['birthday'][1]))
         self.combobox_year.current(YEARS.index(int(self.current_user_info['birthday'][2])))
 
-        self.button_add.config(text='Редактировать', command=self.on_click)
-
     def on_click(self):
         # Формируем данные для передачи в главное окно
         user_id = self.current_user_info['user_id']
@@ -478,7 +477,6 @@ class EditUser(AddUser):
         if first_name + last_name != '':
             self.main_window.edit_user_in_db(user_id, first_name, last_name, birthday)
             self.main_window.display_table_users()
-            print(self.main_window.main_window_state)
             self.destroy()
 
 
