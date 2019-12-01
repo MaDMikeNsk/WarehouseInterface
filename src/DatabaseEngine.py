@@ -49,13 +49,20 @@ class DatabaseEngine:
             self.session.delete(goods)
             self.session.commit()
 
-    def add_goods_for_this_month(self, user_id, month, goods_amount: int):
-        for goods in self.session.query(Goods).filter(Goods.user_id == user_id, Goods.month == month).all():
-            res = int(goods.goods) + goods_amount
-            goods.goods = res
+    def add_goods_for_this_month(self, user_id, month, goods: int):
+        for record in self.session.query(Goods).filter(Goods.user_id == user_id, Goods.month == month).all():
+            record.goods = int(record.goods) + goods
         self.session.commit()
 
     def update_goods(self, user_id, month, goods):
         for record in self.session.query(Goods).filter(Goods.user_id == user_id, Goods.month == month).all():
-            record.goods = str(int(record.goods) + goods)
+            record.goods = goods
         self.session.commit()
+
+    # КОСТЫЛЬ! функция нужна для отображени текущего значения goods
+    # для пользователя при выборе месяца в окне 'Редактировать товар'
+    def get_goods_amount(self, user_id, month):
+        result = ''
+        for record in self.session.query(Goods).filter(Goods.user_id == user_id, Goods.month == month).all():
+            result = record.goods
+        return result

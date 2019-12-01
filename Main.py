@@ -17,7 +17,6 @@ c) менять диапазон времени для графиков -  ме�
 """
 import tkinter as tk
 from tkinter import ttk
-from typing import Any, Tuple
 
 from src.DatabaseEngine import DatabaseEngine
 from src.TableItems import User, Goods
@@ -187,12 +186,12 @@ class Main(tk.Frame):
         # 'Редактировать'
         edit_menu = tk.Menu(self.menu_bar, tearoff=0)
         edit_menu.add_command(label='Добавить клиента', command=lambda: self.display_add_user_window())
-        edit_menu.add_command(label='Добавить товар')
+        edit_menu.add_command(label='Добавить товар', command=lambda: self.display_add_goods_window())
 
         # Конструируем подменю меню 'Редактировать'
         edit_choice = tk.Menu(edit_menu, tearoff=0)
         edit_choice.add_command(label='Данные клиента', command=lambda: self.display_edit_user_window())
-        edit_choice.add_command(label='Товар клиента')
+        edit_choice.add_command(label='Количество товара', command=lambda: self.display_edit_goods_window())
         edit_menu.add_cascade(label='Редактировать', menu=edit_choice)
         self.menu_bar.add_cascade(label='Редактировать', menu=edit_menu)
 
@@ -227,7 +226,6 @@ class Main(tk.Frame):
         self.main_window_state['user_id'] = selected_user['user_id']
         self.main_window_state['user_name'] = selected_user['user_name']
         self.main_window_state['goods_visible'] = True
-        print(self.main_window_state)
 
     def set_main_window_state(self, user_id=None, user_name=None, is_display=None):
         self.main_window_state['user_id'] = user_id
@@ -304,14 +302,18 @@ class Main(tk.Frame):
     def display_add_goods_window(self):
         if self.main_window_state['user_id'] != '':
             if self.table_goods.selection() != ():
-                current_user_info = self.get_data_from_goods_selection()
-                AddGoods(self.root, current_user_info)
+                selected_user = self.get_data_from_goods_selection()
+                AddGoods(self.root, selected_user)
             else:
                 AddGoods(self.root, self.main_window_state)
 
     def display_edit_goods_window(self):
-        self.update_main_window_state()
-        EditGoods(self.root, self.main_window_state)
+        if self.main_window_state['goods_visible']:
+            if self.table_goods.selection() != ():
+                selected_goods = self.get_data_from_goods_selection()
+                EditGoods(self.root, selected_goods)
+            else:
+                EditGoods(self.root, self.main_window_state)
 
     # ==================================================================================================================
     #                              ОБРАБОТКА НАЖАТИЯ КНОПОК В ДОЧЕРНИХ ОКНАХ - РАБОТА С БАЗОЙ ДАННЫХ
@@ -346,19 +348,19 @@ class Main(tk.Frame):
             self.update_label_total_goods_per_month()
             self.display_table_users()
 
-            print(self.main_window_state)
-
     def edit_user_in_db(self, user_id, first_name, last_name, birthday):
         self.db.update_user(user_id, first_name, last_name, birthday)
         self.display_table_users()
 
     def update_goods_in_db(self, user_id, month, goods):
-        self.db.update_goods(user_id, month, goods)
+        self.db.add_goods_for_this_month(user_id, month, goods)
         self.update_label_total_goods_per_month()
         self.display_table_user_goods(user_id)
 
-    def edit_goods_in_db(self):
-        pass
+    def edit_goods_in_db(self, user_id, month, goods):
+        self.db.update_goods(user_id, month, goods)
+        self.update_label_total_goods_per_month()
+        self.display_table_user_goods(user_id)
 
     def reset_goods(self):
         if self.table_goods.selection() != ():
@@ -369,14 +371,17 @@ class Main(tk.Frame):
             self.display_table_user_goods(self.main_window_state['user_id'])
             self.update_label_total_goods_per_month()
 
-            print(self.main_window_state)
-
 
 class AddUser(tk.Toplevel):
     def __init__(self, my_root):
         super().__init__(my_root)
         self.birthday = None
         self.main_window = app
+        self.entry_first_name = \
+            self.entry_last_name = \
+            self.combobox_days = \
+            self.combobox_month = \
+            self.combobox_year = None
         self.init_window()
         self.grab_set()
 
@@ -416,11 +421,9 @@ class AddUser(tk.Toplevel):
         self.combobox_year.place(x=275, y=80)
 
         # **************************************** row 4 ********************************************
-        self.user_birthday = [self.combobox_days.get(), self.combobox_month.get(), self.combobox_year.get()]
-
-        self.button_add = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray',
+        button_add = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray',
                                     command=lambda: self.on_click())
-        self.button_add.place(x=40, y=120)
+        button_add.place(x=40, y=120)
 
         button_cancel = tk.Button(self, text='Отмена', padx=5, pady=5, width=15, bg='light gray',
                                   command=lambda: self.destroy())
@@ -445,7 +448,7 @@ class EditUser(AddUser):
         self.init_ui()
 
     def init_ui(self):
-        self.title('Редактировать...')
+        self.title('Редактировать данные клиента')
         # ************ ПЕРЕОПРЕДЕЛИМ СОСТОЯНИЕ ПОЛЕЙ ВВОДА, ИСПОЛЬЗУЯ ПЕРЕМЕННУЮ string.main_window_data ***********
 
         # Устанавливаем имя
@@ -487,11 +490,11 @@ class AddGoods(tk.Toplevel):
             self.combobox_month = None
         self.main_window_data = main_window_data
         self.main_window = app  # Главное окно
-        self.init_ui()
+        self.init_window()
         self.grab_set()
 
-    def init_ui(self):
-        self.title('Добавить товар...')
+    def init_window(self):
+        self.title('Добавить товар')
         self.geometry('360x180+400+400')
         self.resizable(False, False)
 
@@ -532,16 +535,50 @@ class AddGoods(tk.Toplevel):
         button_cancel.place(x=200, y=130)
 
     def on_click(self):
-
-        def is_int(s):
-            if s != '':
-                if s[0] in ('-', '+'):
-                    return s[1:].isdigit()
-                return s.isdigit()
-
         goods_amount = self.entry_goods.get()
-        if is_int(goods_amount):
+        if self.main_window.is_int(goods_amount):
             self.main_window.update_goods_in_db(user_id=self.main_window_data['user_id'],
+                                                month=self.combobox_month.get(),
+                                                goods=int(goods_amount))
+            self.destroy()
+
+
+class EditGoods(AddGoods):
+    def __init__(self, my_root, main_window_data):
+        super().__init__(my_root, main_window_data)
+        self.entry_text = None
+        self.init_ui()
+        self.grab_set()
+
+    def init_ui(self):
+        self.title('Редактировать количество товара')
+        self.geometry('360x180+400+400')
+        self.resizable(False, False)
+
+        # Добавляем текстовую пременную в entry_goods
+        self.entry_text = tk.StringVar()
+        self.entry_goods.config(textvariable=self.entry_text)
+        self.combobox_month.bind("<<ComboboxSelected>>", self.on_click_month_box)
+
+        # Применяем КОСТЫЛЬ для отображения значения goods в поле 'Товар'
+        # Обращаемся к базе данных из дочернего окна
+        if self.main_window.table_goods.selection() != ():
+            self.entry_text.set(self.main_window.db.get_goods_amount(self.main_window_data['user_id'],
+                                                                     self.main_window_data['month']))
+        else:
+            self.entry_text.set(self.main_window.db.get_goods_amount(self.main_window_data['user_id'], 'Январь'))
+
+    # Костыль! Изменяем значение поля entry_goods при выборе месяца
+    def on_click_month_box(self, event):
+        current_month = self.combobox_month.get()
+        for item in self.main_window.db.session.query(Goods).filter(Goods.user_id == self.main_window_data['user_id'],
+                                                                    Goods.month == current_month).all():
+            self.entry_text.set(item.goods)
+
+    def on_click(self):
+        goods_amount = self.entry_goods.get()
+        if self.main_window.is_int(goods_amount):
+            self.main_window.edit_goods_in_db(user_id=self.main_window_data['user_id'],
                                                 month=self.combobox_month.get(),
                                                 goods=int(goods_amount))
             self.destroy()
