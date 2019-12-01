@@ -39,7 +39,8 @@ class Main(tk.Frame):
             self.label_total_goods_per_month = \
             self.arrow_image = \
             self.graphic_image = \
-            self.diagram_image = None
+            self.diagram_image = \
+            self.menu_bar = None
         self.main_window_state = {'user_id': '',
                                   'user_name': [],
                                   'goods_visible': False}
@@ -449,6 +450,8 @@ class EditUser(AddUser):
     def __init__(self, my_root: tk.Tk, current_user_info: dict):
         super().__init__(my_root)
         self.current_user_info = current_user_info
+        self.entry_first_name_text = \
+            self.entry_last_name_text = None
         self.init_ui()
 
     def init_ui(self):
