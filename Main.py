@@ -17,7 +17,6 @@ c) менять диапазон времени для графиков -  ме�
 """
 import tkinter as tk
 from tkinter import ttk
-
 from src.DatabaseEngine import DatabaseEngine
 from src.TableItems import User, Goods
 
