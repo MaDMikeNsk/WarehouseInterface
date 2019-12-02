@@ -62,10 +62,10 @@ class Main(tk.Frame):
         #                                            МЕТКИ ГЛАВНОГО ОКНА
         # ==============================================================================================================
         label_table_name_users = tk.Label(text='Список клиентов', font=('Adobe Clean Light', 18, 'bold'))
-        label_table_name_users.place(x=160, y=20)
+        label_table_name_users.place(x=140, y=20)
 
         label_table_name_goods = tk.Label(text='Куплено товара', font=('Adobe Clean Light', 18, 'bold'))
-        label_table_name_goods.place(x=730, y=20)
+        label_table_name_goods.place(x=710, y=20)
 
         label_total_user = tk.Label(text='Всего клиентов:', font=('Adobe Clean Light', 16, 'bold'))
         label_total_user.place(x=20, y=500)
