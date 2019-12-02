@@ -109,11 +109,11 @@ class Main(tk.Frame):
         # ==============================================================================================================
         self.add_image = tk.PhotoImage(file='image/add.png')
         button_add_user = tk.Button(image=self.add_image, command=lambda: self.display_add_user_window(), bd=0)
-        button_add_user.place(x=20, y=420)
+        button_add_user.place(x=15, y=420)
 
         self.edit_image = tk.PhotoImage(file='image/edit.png')
         button_edit_user = tk.Button(image=self.edit_image, command=lambda: self.display_edit_user_window(), bd=0)
-        button_edit_user.place(x=175, y=420)
+        button_edit_user.place(x=172, y=420)
 
         self.delete_image = tk.PhotoImage(file='image/delete.png')
         button_delete_user = tk.Button(image=self.delete_image, command=lambda: self.delete_user_from_db(), bd=0)
