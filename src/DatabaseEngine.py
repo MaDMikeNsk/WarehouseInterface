@@ -38,12 +38,6 @@ class DatabaseEngine:
         self.session.add(goods)
         self.session.commit()
 
-    def reset_goods(self, user_id, month):
-        for goods in self.session.query(Goods).filter(Goods.user_id == user_id,
-                                                      Goods.month == month).all():
-            goods.goods = 0
-        self.session.commit()
-
     def delete_goods(self, user_id):
         for goods in self.session.query(Goods).filter(Goods.user_id == user_id).all():
             self.session.delete(goods)
@@ -59,10 +53,16 @@ class DatabaseEngine:
             record.goods = goods
         self.session.commit()
 
-    # КОСТЫЛЬ! функция нужна для отображени текущего значения goods
-    # для пользователя при выборе месяца в окне 'Редактировать товар'
+    # функция нужна для отображени текущего значения goods у пользователя при выборе месяца в окне 'Редактировать товар'
     def get_goods_amount(self, user_id, month):
         result = ''
         for record in self.session.query(Goods).filter(Goods.user_id == user_id, Goods.month == month).all():
             result = record.goods
         return result
+
+    # Функция не используется! Кнопка удалена!
+    def reset_goods(self, user_id, month):
+        for goods in self.session.query(Goods).filter(Goods.user_id == user_id,
+                                                      Goods.month == month).all():
+            goods.goods = 0
+        self.session.commit()

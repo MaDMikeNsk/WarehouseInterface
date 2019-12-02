@@ -32,20 +32,28 @@ class Main(tk.Frame):
         super().__init__(my_root)
         self.root = my_root
         self.db = db  # База данных
+
         self.table_users = \
             self.table_goods = \
             self.combobox_month = \
             self.label_total_user_info = \
             self.label_total_goods_per_month = \
+            self.menu_bar = None
+
+        self.add_image = \
+            self.edit_image = \
+            self.delete_image = \
+            self.cancel_image = \
             self.arrow_image = \
             self.graphic_image = \
-            self.diagram_image = \
-            self.menu_bar = None
+            self.diagram_image = None
+
         self.main_window_state = {'user_id': '',
                                   'user_name': [],
                                   'goods_visible': False}
 
         self.init_main()
+        # Инициализация состояния главного окна при первом запуске
         self.update_label_total_user_info()
         self.update_label_total_goods_per_month()
         self.display_table_users()
@@ -66,11 +74,11 @@ class Main(tk.Frame):
         label_total_goods = tk.Label(text='Куплено за месяц ', font=('Adobe Clean Light', 16, 'bold'))
         label_total_goods.place(x=20, y=550)
 
-        self.label_total_user_info = tk.Label(font=('Adobe Clean Light', 14, 'italic'), fg='dark blue')
-        self.label_total_user_info.place(x=200, y=502)
+        self.label_total_user_info = tk.Label(font=('Adobe Clean Light', 17, 'italic'), fg='dark blue')
+        self.label_total_user_info.place(x=200, y=500)
 
-        self.label_total_goods_per_month = tk.Label(font=('Adobe Clean Light', 14, 'italic'), fg='dark blue')
-        self.label_total_goods_per_month.place(x=310, y=553)
+        self.label_total_goods_per_month = tk.Label(font=('Adobe Clean Light', 17, 'italic'), fg='dark blue')
+        self.label_total_goods_per_month.place(x=310, y=550)
 
         # ==============================================================================================================
         #                                        ТАБЛИЦА ПОЛЬЗОВАТЕЛЕЙ (СЛЕВА)
@@ -100,14 +108,19 @@ class Main(tk.Frame):
         # ==============================================================================================================
         #                                      КНОПКИ ПОД ТАБЛИЦЕЙ ПОЛЬЗОВАТЕЛЕЙ
         # ==============================================================================================================
-        button_add_user = tk.Button(text='Добавить клиента', command=lambda: self.display_add_user_window())
+        self.add_image = tk.PhotoImage(file='image/add.png')
+        button_add_user = tk.Button(image=self.add_image, command=lambda: self.display_add_user_window(), bd=0)
         button_add_user.place(x=20, y=420)
 
-        button_edit_user = tk.Button(text='Редактировать', command=lambda: self.display_edit_user_window())
-        button_edit_user.place(x=150, y=420)
+        self.edit_image = tk.PhotoImage(file='image/edit.png')
+        button_edit_user = tk.Button(image=self.edit_image, command=lambda: self.display_edit_user_window(), bd=0)
+        button_edit_user.place(x=175, y=420)
 
-        button_delete_user = tk.Button(text='Удалить запись', command=lambda: self.delete_user_from_db())
-        button_delete_user.place(x=300, y=420)
+        self.delete_image = tk.PhotoImage(file='image/delete.png')
+        button_delete_user = tk.Button(image=self.delete_image, command=lambda: self.delete_user_from_db(), bd=0)
+        button_delete_user.place(x=330, y=420)
+
+        self.cancel_image = tk.PhotoImage(file='image/cancel.png')
 
         # ==============================================================================================================
         #                                        ТАБЛИЦА ТОВАРОВ (СПРАВА)
@@ -132,14 +145,16 @@ class Main(tk.Frame):
         # ==============================================================================================================
         #                                        КНОПКИ ПОД ТАБЛИЦЕЙ ТОВАРОВ
         # ==============================================================================================================
-        button_add_goods = tk.Button(text='Добавить товар', command=lambda: self.display_add_goods_window())
-        button_add_goods.place(x=650, y=360)
+        # self.add_goods_image = tk.PhotoImage(file='image/addGoods.png')
+        button_add_goods = tk.Button(image=self.add_image, command=lambda: self.display_add_goods_window(), bd=0)
+        button_add_goods.place(x=652, y=360)
 
-        button_edit_goods = tk.Button(text='Редактировать', command=lambda: self.display_edit_goods_window())
-        button_edit_goods.place(x=750, y=360)
+        button_edit_goods = tk.Button(image=self.edit_image, command=lambda: self.display_edit_goods_window(), bd=0)
+        button_edit_goods.place(x=810, y=360)
 
-        button_delete_goods = tk.Button(text='Обнулить  запись', command=lambda: self.reset_goods())
-        button_delete_goods.place(x=844, y=360)
+        # !!!Кнопка временно удалена
+        """button_delete_goods = tk.Button(text='Обнулить  запись', command=lambda: self.reset_goods())
+        button_delete_goods.place(x=844, y=360)"""
 
         # ==============================================================================================================
         #                                          КНОПКИ МЕЖДУ ТАБЛИЦАМИ
@@ -149,11 +164,11 @@ class Main(tk.Frame):
         button_arrow.place(x=525, y=110)
 
         self.graphic_image = tk.PhotoImage(file='image/graphic.png')
-        button_graphic = tk.Button(image=self.graphic_image, bd=0)  # TODO command
+        button_graphic = tk.Button(image=self.graphic_image, bd=0)  # TODO отображение графика
         button_graphic.place(x=530, y=200)
 
         self.diagram_image = tk.PhotoImage(file='image/diagram.png')
-        button_diagram = tk.Button(image=self.diagram_image, bd=0)  # TODO command
+        button_diagram = tk.Button(image=self.diagram_image, bd=0)  # TODO отображение диаграммы
         button_diagram.place(x=530, y=310)
 
         # ==============================================================================================================
@@ -172,8 +187,8 @@ class Main(tk.Frame):
 
         # 'Файл'
         file_menu = tk.Menu(self.menu_bar, tearoff=0)
-        file_menu.add_command(label="Открыть...")  # TODO
-        file_menu.add_command(label="Сохранить...")  # TODO
+        file_menu.add_command(label="Открыть...")  # TODO открыть базу данных
+        file_menu.add_command(label="Сохранить...")  # TODO сохранить базу данных
         file_menu.add_command(label="Выход", command=self.quit)
         self.menu_bar.add_cascade(label='Файл', menu=file_menu)
 
@@ -211,12 +226,14 @@ class Main(tk.Frame):
                 return string[1:].isdigit()
             return string.isdigit()
 
+    # Клик на стрелку
     def on_click_arrow_button(self):
-        selected_user = self.get_data_from_user_selection()
-        self.display_table_user_goods(selected_user['user_id'])
-        self.main_window_state['user_id'] = selected_user['user_id']
-        self.main_window_state['user_name'] = selected_user['user_name']
-        self.main_window_state['goods_visible'] = True
+        if self.table_users.selection() != ():
+            selected_user = self.get_data_from_user_selection()
+            self.display_table_user_goods(selected_user['user_id'])
+            self.main_window_state['user_id'] = selected_user['user_id']
+            self.main_window_state['user_name'] = selected_user['user_name']
+            self.main_window_state['goods_visible'] = True
 
     def set_main_window_state(self, user_id=None, user_name=None, is_display=None):
         self.main_window_state['user_id'] = user_id
@@ -284,7 +301,7 @@ class Main(tk.Frame):
     # ==================================================================================================================
     #                                  ФУНКЦИИ ДЛЯ ОБРАБОТКИ НАЖАТИЯ КНОПОК ПОД ТАБЛИЦАМИ
     # ==================================================================================================================
-    # Кнопка 'Добавить клиента'
+    # Кнопка 'Добавить' (под левой таблицей)
     def display_add_user_window(self):
         AddUser(self.root)
 
@@ -294,7 +311,7 @@ class Main(tk.Frame):
             selected_user = self.get_data_from_user_selection()
             EditUser(self.root, selected_user)
 
-    # Кнопка 'Удалить запись'
+    # Кнопка 'Удалить запись' (под левой таблицей)
     def delete_user_from_db(self):
         if self.table_users.selection() != ():
             # Получаем ID пользователя, которого выбрали в таблице
@@ -314,7 +331,7 @@ class Main(tk.Frame):
             self.update_label_total_goods_per_month()
             self.display_table_users()
 
-    # Кнопка 'Добавить товар'
+    # Кнопка 'Добавить' (под правой таблицей)
     def display_add_goods_window(self):
         if self.main_window_state['user_id'] != '':
             if self.table_goods.selection() != ():
@@ -323,7 +340,7 @@ class Main(tk.Frame):
             else:
                 AddGoods(self.root, self.main_window_state)
 
-    # Кнопка ''Редактировать' (под правой таблицей)'
+    # Кнопка 'Редактировать' (под правой таблицей)
     def display_edit_goods_window(self):
         if self.main_window_state['goods_visible']:
             if self.table_goods.selection() != ():
@@ -332,7 +349,8 @@ class Main(tk.Frame):
             else:
                 EditGoods(self.root, self.main_window_state)
 
-    # Кнопка 'Обнулить запись'
+    # Удалена, не влезла по размеру, функционал передан кнопке 'Редактировать'
+    """# Кнопка 'Обнулить запись' (под правой таблицей) 
     def reset_goods(self):
         if self.table_goods.selection() != ():
             # Получаем данные из выделенной строки в таблице Goods и обнуляем поле 'Товар' в этой строке
@@ -341,7 +359,7 @@ class Main(tk.Frame):
 
             # Обновляем таблицу товаров и данные 'ИТОГО'
             self.display_table_user_goods(self.main_window_state['user_id'])
-            self.update_label_total_goods_per_month()
+            self.update_label_total_goods_per_month()"""
 
     # ==================================================================================================================
     #                          ОБРАБОТКА НАЖАТИЯ КНОПОК В ДОЧЕРНИХ ОКНАХ - РАБОТА С БАЗОЙ ДАННЫХ
@@ -388,7 +406,8 @@ class AddUser(tk.Toplevel):
             self.combobox_days = \
             self.combobox_month = \
             self.combobox_year = \
-            self.button_add = None
+            self.button_add = \
+            self.cancel_image = None
         self.init_window()
         self.grab_set()
 
@@ -436,13 +455,11 @@ class AddUser(tk.Toplevel):
         # ==============================================================================================================
         #                                                     ROW 4
         # ==============================================================================================================
-        self.button_add = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray',
-                                          command=lambda: self.on_click())
-        self.button_add.place(x=40, y=120)
+        self.button_add = tk.Button(self, image=self.main_window.add_image, bd=0, command=lambda: self.on_click())
+        self.button_add.place(x=20, y=120)
 
-        button_cancel = tk.Button(self, text='Отмена', padx=5, pady=5, width=15, bg='light gray',
-                                        command=lambda: self.destroy())
-        button_cancel.place(x=200, y=120)
+        button_cancel = tk.Button(self, image=self.main_window.cancel_image, bd=0, command=lambda: self.destroy())
+        button_cancel.place(x=185, y=120)
 
     # Обработка нажатия на кнопку 'Добавить'
     def on_click(self):
@@ -461,9 +478,9 @@ class AddUser(tk.Toplevel):
 class EditUser(AddUser):
     def __init__(self, my_root: tk.Tk, current_user_info: dict):
         super().__init__(my_root)
-        self.current_user_info = current_user_info
         self.entry_first_name_text = \
             self.entry_last_name_text = None
+        self.current_user_info = current_user_info
         self.init_ui()
 
     def init_ui(self):
@@ -486,8 +503,8 @@ class EditUser(AddUser):
         self.combobox_month.current(MONTH.index(self.current_user_info['birthday'][1]))
         self.combobox_year.current(YEARS.index(int(self.current_user_info['birthday'][2])))
 
-        # Меняем текст кнопки
-        self.button_add.config(text='Редактировать')
+        # Меняем иконку кнопки
+        self.button_add.config(image=self.main_window.edit_image)
 
     # Обработка нажатия на кнопку Редактировать'
     def on_click(self):
@@ -529,7 +546,7 @@ class AddGoods(tk.Toplevel):
 
         self.label_client_info = tk.Label(self, text=self.main_window_data['user_name'][0] + ' ' +
                                                      self.main_window_data['user_name'][1],
-                                                font=('Adobe Clean Light', 11, 'italic'), fg='gray')
+                                                font=('Adobe Clean Light', 13, 'bold'), fg='#227A05')
         self.label_client_info.place(x=115, y=20)
 
         # ==============================================================================================================
@@ -555,16 +572,15 @@ class AddGoods(tk.Toplevel):
         self.entry_goods.place(x=115, y=90)
 
         # ==============================================================================================================
-        #                                                     ROW 1
+        #                                                     ROW 4
         # ==============================================================================================================
-        self.button_edit = tk.Button(self, text='Добавить', padx=5, pady=5, width=15, bg='light gray',
-                                           command=lambda: self.on_click())
-        self.button_edit.place(x=40, y=130)
+        self.button_add = tk.Button(self, image=self.main_window.add_image, bd=0, command=lambda: self.on_click())
+        self.button_add.place(x=20, y=120)
 
-        button_cancel = tk.Button(self, text='Отмена', padx=5, pady=5, width=15, bg='light gray',
-                                        command=lambda: self.destroy())
-        button_cancel.place(x=200, y=130)
+        button_cancel = tk.Button(self, image=self.main_window.cancel_image, bd=0, command=lambda: self.destroy())
+        button_cancel.place(x=185, y=120)
 
+    # Обработка нажатия на кнопку 'Добавить'
     def on_click(self):
         goods_amount = self.entry_goods.get()
         if self.main_window.is_int(goods_amount):
@@ -603,13 +619,15 @@ class EditGoods(AddGoods):
             # Если нет, установим по дефолту месяц 'Январь' и кол-во товара за 'Январь'
             self.entry_text.set(self.main_window.get_goods_amount(self.main_window_data['user_id'], 'Январь'))
 
-        # Меняем текст кнопки
-        self.button_edit.config(text='Редактировать')
+        # Меняем иконку кнопки
+        self.button_add.config(image=self.main_window.edit_image)
 
+    # Действие при выборе месяца - отображаем кол-во товара в поле ввода для этого месяца
     def on_click_month_box(self, event):
         current_month = self.combobox_month.get()
         self.entry_text.set(self.main_window.get_goods_amount(self.main_window_data['user_id'], current_month))
 
+    # Обработка нажатия на кнопку 'Редактировать'
     def on_click(self):
         goods_amount = self.entry_goods.get()
         if self.main_window.is_int(goods_amount):
@@ -626,6 +644,6 @@ if __name__ == "__main__":
     app = Main(root)
     app.pack()
     root.title("Warehouse Interface")
-    root.geometry("1000x650+100+50")
+    root.geometry("1000x650+300+100")
     root.resizable(False, False)
     root.mainloop()
