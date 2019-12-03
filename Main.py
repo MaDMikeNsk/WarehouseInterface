@@ -17,6 +17,9 @@ c) менять диапазон времени для графиков -  ме�
 """
 import tkinter as tk
 from tkinter import ttk
+import matplotlib.pyplot as plt
+import numpy as np
+
 from src.DatabaseEngine import DatabaseEngine
 from src.TableItems import User, Goods
 
@@ -163,7 +166,7 @@ class Main(tk.Frame):
         button_arrow.place(x=525, y=110)
 
         self.graphic_image = tk.PhotoImage(file='image/graphic.png')
-        button_graphic = tk.Button(image=self.graphic_image, bd=0)  # TODO отображение графика
+        button_graphic = tk.Button(image=self.graphic_image, bd=0, command=lambda: Graphic()) # TODO отображение графика
         button_graphic.place(x=530, y=200)
 
         self.diagram_image = tk.PhotoImage(file='image/diagram.png')
@@ -176,7 +179,7 @@ class Main(tk.Frame):
         self.combobox_month = ttk.Combobox(values=MONTH, width=10)
         self.combobox_month.bind("<<ComboboxSelected>>", lambda event: self.callback(event))
         self.combobox_month.current(0)
-        self.combobox_month.place(x=210, y=557)
+        self.combobox_month.place(x=215, y=557)
 
         # ==============================================================================================================
         #                                            КОНСТРУИРУЕМ 'МЕНЮ'
@@ -635,6 +638,21 @@ class EditGoods(AddGoods):
                                               month=self.combobox_month.get(),
                                               goods=int(goods_amount))
             self.destroy()
+
+
+class Graphic:
+    def __init__(self):
+
+        x = np.arange(0, 10, 0.2)
+        y = np.sin(x)
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.plot(x, y)
+        plt.show()
+
+
+class Diagram:
+    pass
 
 
 if __name__ == "__main__":
