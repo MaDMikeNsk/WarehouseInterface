@@ -641,10 +641,16 @@ class EditGoods(AddGoods):
 
 
 class Graphic:
-    def __init__(self):
 
-        x = np.arange(0, 10, 0.2)
-        y = np.sin(x)
+    def __init__(self):
+        self.init_iu()
+
+    def init_iu(self):
+        from random import randint
+
+        x = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июнь',
+             'Июль', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
+        y = [randint(1, 100) for x in range(1, 13)]
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ax.plot(x, y)
