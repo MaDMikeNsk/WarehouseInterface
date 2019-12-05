@@ -407,6 +407,7 @@ class Main(tk.Frame):
     def get_goods_amount(self, user_id, month):
         return self.db.get_goods_amount(user_id, month)
 
+    # Получаем лист значений кол-ва товара по месяцам для пользователя user_id, для отрисовки графика
     def get_goods_values_of_user(self, user_id) -> list:
         result = []
         for index in range(12):
