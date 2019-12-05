@@ -26,6 +26,8 @@ from src.TableItems import User, Goods
 DAYS = [x for x in range(1, 32)]
 MONTH = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
          'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+MONTH_SHORT = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июнь',
+               'Июль', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
 YEARS = [x for x in range(1950, 2010)]
 
 
@@ -89,7 +91,7 @@ class Main(tk.Frame):
         frame_users.place(x=20, y=80)
 
         self.table_users = ttk.Treeview(frame_users, columns=('ID', 'last_name', 'first_name', 'birthday'),
-                                        height=15, show='headings', selectmode='browse')
+                                        height=15, show='headings', selectmode='extended')
         self.table_users.column("ID", width=45, anchor=tk.CENTER)
         self.table_users.column("last_name", width=150, anchor=tk.CENTER)
         self.table_users.column("first_name", width=150, anchor=tk.CENTER)
@@ -166,7 +168,8 @@ class Main(tk.Frame):
         button_arrow.place(x=525, y=110)
 
         self.graphic_image = tk.PhotoImage(file='image/graphic.png')
-        button_graphic = tk.Button(image=self.graphic_image, bd=0, command=lambda: Graphic()) # TODO отображение графика
+        button_graphic = tk.Button(image=self.graphic_image, bd=0,
+                                   command=lambda: self.display_graphic())  # TODO отображение графика
         button_graphic.place(x=530, y=200)
 
         self.diagram_image = tk.PhotoImage(file='image/diagram.png')
@@ -309,13 +312,13 @@ class Main(tk.Frame):
 
     # Кнопка 'Редактировать' (под левой таблицей)
     def display_edit_user_window(self):
-        if self.table_users.selection() != ():
+        if len(self.table_users.selection()) == 1:
             selected_user = self.get_data_from_user_selection()
             EditUser(self.root, selected_user)
 
     # Кнопка 'Удалить запись' (под левой таблицей)
     def delete_user_from_db(self):
-        if self.table_users.selection() != ():
+        if len(self.table_users.selection()) == 1:
             # Получаем ID пользователя, которого выбрали в таблице
             current_user = self.get_data_from_user_selection()
 
@@ -350,6 +353,13 @@ class Main(tk.Frame):
                 EditGoods(self.root, selected_goods)
             else:
                 EditGoods(self.root, self.main_window_state)
+
+    def display_graphic(self):
+        if len(self.table_users.selection()) == 1:
+            user_data = self.get_data_from_user_selection()
+            goods_values = self.get_goods_values_of_user(user_data['user_id'])  # List
+            name = user_data['user_name'][0] + ' ' + user_data['user_name'][1]
+            Graphic(goods_values, name)
 
     # Удалена, не влезла по размеру, функционал передан кнопке 'Редактировать'
     """# Кнопка 'Обнулить запись' (под правой таблицей) 
@@ -396,6 +406,12 @@ class Main(tk.Frame):
     # Используем функцию при вызове окна 'Редактировать количество товара', получаем значение для вставки в поле ввода
     def get_goods_amount(self, user_id, month):
         return self.db.get_goods_amount(user_id, month)
+
+    def get_goods_values_of_user(self, user_id) -> list:
+        result = []
+        for index in range(12):
+            result.append(int(self.get_goods_amount(user_id, MONTH[index])))
+        return result
 
 
 class AddUser(tk.Toplevel):
@@ -585,7 +601,8 @@ class AddGoods(tk.Toplevel):
     # Обработка нажатия на кнопку 'Добавить'
     def on_click(self):
         goods_amount = self.entry_goods.get()
-        if self.main_window.is_int(goods_amount):
+        # if self.main_window.is_int(goods_amount):
+        if goods_amount.isdigit():
             # Если то, что ввели, является целым числом (со знаком или без), то вызываем функции из ГЛАВНОГО окна
             self.main_window.update_goods_in_db(user_id=self.main_window_data['user_id'],
                                                 month=self.combobox_month.get(),
@@ -632,7 +649,8 @@ class EditGoods(AddGoods):
     # Обработка нажатия на кнопку 'Редактировать'
     def on_click(self):
         goods_amount = self.entry_goods.get()
-        if self.main_window.is_int(goods_amount):
+        # if self.main_window.is_int(goods_amount):  Функция не нужна, отрицательные значения не берём
+        if goods_amount.isdigit():
             # Если то, что ввели, является целым числом (со знаком или без), то вызываем функции из ГЛАВНОГО окна
             self.main_window.edit_goods_in_db(user_id=self.main_window_data['user_id'],
                                               month=self.combobox_month.get(),
@@ -642,18 +660,17 @@ class EditGoods(AddGoods):
 
 class Graphic:
 
-    def __init__(self):
-        self.init_iu()
+    def __init__(self, goods_amounts: list, user_name: str):
+        self.init_iu(goods_amounts, user_name)
 
-    def init_iu(self):
-        from random import randint
-
-        x = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июнь',
-             'Июль', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
-        y = [randint(1, 100) for x in range(1, 13)]
+    @staticmethod
+    def init_iu(goods_amounts, user_name):
         fig = plt.figure()
-        ax = fig.add_subplot(111)
-        ax.plot(x, y)
+        graphic = fig.add_subplot(111)
+        graphic.plot(MONTH_SHORT, goods_amounts, color='blue')
+        graphic.set(xlabel='ПЕРИОД', ylabel='КОЛИЧЕСТВО ТОВАРА',
+                    title=f'{user_name}')
+        graphic.grid()
         plt.show()
 
 
