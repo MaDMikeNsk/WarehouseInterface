@@ -15,13 +15,17 @@ a) реализовать график для товара - выбираем м
 b)динамически обновлять графики - если изменилась таблица, меняем содержимое графика в реальном времени
 c) менять диапазон времени для графиков -  меню, где можно задать oX min и oX max
 """
-import tkinter as tk
+
 from tkinter import ttk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.figure import Figure
+from src.DatabaseEngine import DatabaseEngine
+from src.TableItems import User, Goods
+import tkinter as tk
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.DatabaseEngine import DatabaseEngine
-from src.TableItems import User, Goods
+
 
 DAYS = [x for x in range(1, 32)]
 MONTH = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
@@ -663,17 +667,27 @@ class Graphic(tk.Toplevel):
 
     def __init__(self, my_root, goods_amounts: list, user_name: str):
         super().__init__(my_root)
-        # self.init_iu(goods_amounts, user_name)
+        self.root = my_root
+        self.init_iu(goods_amounts, user_name)
 
-    @staticmethod
-    def init_iu(goods_amounts, user_name):
-        fig = plt.figure()
-        graphic = fig.add_subplot(111)
+    def init_iu(self, goods_amounts, user_name):
+        self.title('График покупки товаров клиентом')
+        self.geometry('550x550+400+400')
+        self.resizable(False, False)
+
+        figure = plt.figure(dpi=90)
+        graphic = figure.add_subplot(111)
         graphic.plot(MONTH_SHORT, goods_amounts, color='blue', marker='o')
         graphic.set(xlabel='ПЕРИОД', ylabel='КОЛИЧЕСТВО ТОВАРА',
                     title=f'{user_name}')
         graphic.grid()
-        plt.show()
+
+        canvas = FigureCanvasTkAgg(figure, self)
+        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+
+        toolbar = NavigationToolbar2Tk(canvas, self)
+        toolbar.update()
+        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 
 class Diagram:
