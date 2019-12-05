@@ -667,7 +667,7 @@ class Graphic:
     def init_iu(goods_amounts, user_name):
         fig = plt.figure()
         graphic = fig.add_subplot(111)
-        graphic.plot(MONTH_SHORT, goods_amounts, color='blue')
+        graphic.plot(MONTH_SHORT, goods_amounts, color='blue', marker='o')
         graphic.set(xlabel='ПЕРИОД', ylabel='КОЛИЧЕСТВО ТОВАРА',
                     title=f'{user_name}')
         graphic.grid()
