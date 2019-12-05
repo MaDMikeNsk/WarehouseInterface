@@ -359,7 +359,7 @@ class Main(tk.Frame):
             user_data = self.get_data_from_user_selection()
             goods_values = self.get_goods_values_of_user(user_data['user_id'])  # List
             name = user_data['user_name'][0] + ' ' + user_data['user_name'][1]
-            Graphic(goods_values, name)
+            Graphic(self.root, goods_values, name)
 
     # Удалена, не влезла по размеру, функционал передан кнопке 'Редактировать'
     """# Кнопка 'Обнулить запись' (под правой таблицей) 
@@ -658,10 +658,11 @@ class EditGoods(AddGoods):
             self.destroy()
 
 
-class Graphic:
+class Graphic(tk.Toplevel):
 
-    def __init__(self, goods_amounts: list, user_name: str):
-        self.init_iu(goods_amounts, user_name)
+    def __init__(self, my_root, goods_amounts: list, user_name: str):
+        super().__init__(my_root)
+        # self.init_iu(goods_amounts, user_name)
 
     @staticmethod
     def init_iu(goods_amounts, user_name):
