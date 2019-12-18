@@ -25,8 +25,6 @@ import tkinter as tk
 import matplotlib.pyplot as plt
 import numpy as np
 
-
-
 DAYS = [x for x in range(1, 32)]
 MONTH = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
          'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
@@ -172,18 +170,17 @@ class Main(tk.Frame):
         button_arrow.place(x=525, y=110)
 
         self.graphic_image = tk.PhotoImage(file='image/graphic.png')
-        button_graphic = tk.Button(image=self.graphic_image, bd=0,
-                                   command=lambda: self.display_graphic())  # TODO отображение графика
+        button_graphic = tk.Button(image=self.graphic_image, bd=0, command=lambda: self.display_graphic())
         button_graphic.place(x=530, y=200)
 
         self.diagram_image = tk.PhotoImage(file='image/diagram.png')
-        button_diagram = tk.Button(image=self.diagram_image, bd=0)  # TODO отображение диаграммы
+        button_diagram = tk.Button(image=self.diagram_image, bd=0, command=lambda: self.display_diagram())
         button_diagram.place(x=530, y=310)
 
         # ==============================================================================================================
         #                                    COMBOBOX ДЛЯ ОТОБРАЖЕНИЯ ДАННЫХ 'ИТОГО'
         # ==============================================================================================================
-        self.combobox_month = ttk.Combobox(values=MONTH, width=10)
+        self.combobox_month = ttk.Combobox(values=MONTH, width=10, state='readonly')
         self.combobox_month.bind("<<ComboboxSelected>>", lambda event: self.callback(event))
         self.combobox_month.current(0)
         self.combobox_month.place(x=215, y=557)
@@ -365,6 +362,13 @@ class Main(tk.Frame):
             name = user_data['user_name'][0] + ' ' + user_data['user_name'][1]
             Graphic(self.root, goods_values, name)
 
+    def display_diagram(self):
+        if len(self.table_users.selection()) == 1:
+            user_data = self.get_data_from_user_selection()
+            goods_values = self.get_goods_values_of_user(user_data['user_id'])  # List
+            name = user_data['user_name'][0] + ' ' + user_data['user_name'][1]
+            Diagram(self.root, goods_values, name)
+
     # Удалена, не влезла по размеру, функционал передан кнопке 'Редактировать'
     """# Кнопка 'Обнулить запись' (под правой таблицей) 
     def reset_goods(self):
@@ -463,15 +467,15 @@ class AddUser(tk.Toplevel):
         label_birthday = tk.Label(self, text='ДАТА РОЖДЕНИЯ:')
         label_birthday.place(x=30, y=80)
 
-        self.combobox_days = ttk.Combobox(self, values=DAYS, width=2)
+        self.combobox_days = ttk.Combobox(self, values=DAYS, width=2, state='readonly')
         self.combobox_days.current(0)
         self.combobox_days.place(x=150, y=80)
 
-        self.combobox_month = ttk.Combobox(self, values=MONTH, width=10)
+        self.combobox_month = ttk.Combobox(self, values=MONTH, width=10, state='readonly')
         self.combobox_month.current(0)
         self.combobox_month.place(x=188, y=80)
 
-        self.combobox_year = ttk.Combobox(self, values=YEARS, width=5)
+        self.combobox_year = ttk.Combobox(self, values=YEARS, width=5, state='readonly')
         self.combobox_year.current(30)
         self.combobox_year.place(x=275, y=80)
 
@@ -569,7 +573,7 @@ class AddGoods(tk.Toplevel):
 
         self.label_client_info = tk.Label(self, text=self.main_window_data['user_name'][0] + ' ' +
                                                      self.main_window_data['user_name'][1],
-                                                font=('Adobe Clean Light', 13, 'bold'), fg='#227A05')
+                                          font=('Adobe Clean Light', 13, 'bold'), fg='#227A05')
         self.label_client_info.place(x=115, y=20)
 
         # ==============================================================================================================
@@ -578,7 +582,7 @@ class AddGoods(tk.Toplevel):
         label_goods = tk.Label(self, text='МЕСЯЦ:')
         label_goods.place(x=30, y=55)
 
-        self.combobox_month = ttk.Combobox(self, values=MONTH, width=10)
+        self.combobox_month = ttk.Combobox(self, values=MONTH, width=10, state='readonly')
         if self.main_window.table_goods.selection() != ():
             self.combobox_month.current(MONTH.index(self.main_window_data['month']))
         else:
@@ -672,14 +676,12 @@ class Graphic(tk.Toplevel):
 
     def init_iu(self, goods_amounts, user_name):
         self.title('График покупки товаров клиентом')
-        self.geometry('550x550+400+400')
-        self.resizable(False, False)
 
+        k = '3'
         figure = plt.figure(dpi=90)
-        graphic = figure.add_subplot(111)
+        graphic = figure.add_subplot(int(k + '11'))
         graphic.plot(MONTH_SHORT, goods_amounts, color='blue', marker='o')
-        graphic.set(xlabel='ПЕРИОД', ylabel='КОЛИЧЕСТВО ТОВАРА',
-                    title=f'{user_name}')
+        graphic.set(xlabel='ПЕРИОД', ylabel='КОЛИЧЕСТВО ТОВАРА', title=f'{user_name}')
         graphic.grid()
 
         canvas = FigureCanvasTkAgg(figure, self)
@@ -690,8 +692,27 @@ class Graphic(tk.Toplevel):
         canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 
-class Diagram:
-    pass
+class Diagram(tk.Toplevel):
+    def __init__(self, my_root, goods_amounts: list, user_name: str):
+        super().__init__(my_root)
+        self.root = my_root
+        self.init_iu(goods_amounts, user_name)
+
+    def init_iu(self, goods_amounts, user_name):
+        self.title('Диаграмма покупки товаров клиентом')
+
+        # k = '3'
+        figure = plt.figure(dpi=90)
+        graphic = figure.add_subplot(111)
+        graphic.bar(MONTH_SHORT, goods_amounts)
+        graphic.set(xlabel='ПЕРИОД', ylabel='КОЛИЧЕСТВО ТОВАРА', title=f'{user_name}')
+
+        canvas = FigureCanvasTkAgg(figure, self)
+        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+
+        toolbar = NavigationToolbar2Tk(canvas, self)
+        toolbar.update()
+        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 
 if __name__ == "__main__":
