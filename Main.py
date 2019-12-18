@@ -572,7 +572,7 @@ class AddGoods(tk.Toplevel):
         label_client.place(x=30, y=20)
 
         self.label_client_info = tk.Label(self, text=self.main_window_data['user_name'][0] + ' ' +
-                                                     self.main_window_data['user_name'][1],
+                                          self.main_window_data['user_name'][1],
                                           font=('Adobe Clean Light', 13, 'bold'), fg='#227A05')
         self.label_client_info.place(x=115, y=20)
 
@@ -689,7 +689,7 @@ class Graphic(tk.Toplevel):
 
         toolbar = NavigationToolbar2Tk(canvas, self)
         toolbar.update()
-        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        canvas.tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 
 class Diagram(tk.Toplevel):
@@ -712,7 +712,7 @@ class Diagram(tk.Toplevel):
 
         toolbar = NavigationToolbar2Tk(canvas, self)
         toolbar.update()
-        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        canvas.tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 
 if __name__ == "__main__":
