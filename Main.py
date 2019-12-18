@@ -18,12 +18,12 @@ c) менять диапазон времени для графиков -  ме�
 
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from matplotlib.figure import Figure
+# from matplotlib.figure import Figure
 from src.DatabaseEngine import DatabaseEngine
 from src.TableItems import User, Goods
 import tkinter as tk
 import matplotlib.pyplot as plt
-import numpy as np
+# import numpy as np
 
 DAYS = [x for x in range(1, 32)]
 MONTH = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
