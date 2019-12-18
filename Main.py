@@ -689,7 +689,7 @@ class Graphic(tk.Toplevel):
 
         toolbar = NavigationToolbar2Tk(canvas, self)
         toolbar.update()
-        canvas.tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 
 class Diagram(tk.Toplevel):
@@ -712,7 +712,7 @@ class Diagram(tk.Toplevel):
 
         toolbar = NavigationToolbar2Tk(canvas, self)
         toolbar.update()
-        canvas.tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
 
 if __name__ == "__main__":
