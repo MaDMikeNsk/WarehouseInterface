@@ -212,8 +212,8 @@ class Main(tk.Frame):
 
         # 'График'
         graphic_menu = tk.Menu(self.menu_bar, tearoff=0)
-        graphic_menu.add_command(label='График товаров')
-        graphic_menu.add_command(label='Диаграмма товаров')
+        graphic_menu.add_command(label='График товаров', command=lambda: self.display_graphic())
+        graphic_menu.add_command(label='Диаграмма товаров', command=lambda: self.display_diagram())
         self.menu_bar.add_cascade(label='График', menu=graphic_menu)
 
         # 'Справка'
@@ -234,11 +234,11 @@ class Main(tk.Frame):
 
     # Клик на стрелку
     def on_click_arrow_button(self):
-        if self.table_users.selection() != ():
+        if len(self.table_users.selection()) == 1:
             selected_user = self.get_data_from_user_selection()
-            self.display_table_user_goods(selected_user['user_id'])
-            self.main_window_state['user_id'] = selected_user['user_id']
-            self.main_window_state['user_name'] = selected_user['user_name']
+            self.display_table_user_goods(selected_user['user_id'][0])
+            self.main_window_state['user_id'] = selected_user['user_id'][0]
+            self.main_window_state['user_name'] = selected_user['user_name'][0]
             self.main_window_state['goods_visible'] = True
 
     def set_main_window_state(self, user_id=None, user_name=None, is_display=None):
@@ -246,14 +246,15 @@ class Main(tk.Frame):
         self.main_window_state['user_name'] = user_name
         self.main_window_state['goods_visible'] = is_display
 
-    # Получаем данные из выделенной пользователем строки в таблице User (слева)
+    # Получаем данные из выделенных пользователем строк в таблице User (слева)
     def get_data_from_user_selection(self) -> dict:
         if self.table_users.selection() != ():
-            data = {'user_id': None, 'user_name': None, 'birthday': None}
+            data = {'user_id': [], 'user_name': [], 'birthday': []}
             for item in self.table_users.selection():
-                data['user_id'] = self.table_users.item(item)['values'][0]
-                data['user_name'] = [self.table_users.item(item)['values'][2], self.table_users.item(item)['values'][1]]
-                data['birthday'] = self.table_users.item(item)['values'][3].split('/')
+                data['user_id'].append(self.table_users.item(item)['values'][0])
+                data['user_name'].append([self.table_users.item(item)['values'][2] + '' +
+                                            self.table_users.item(item)['values'][1]])
+                data['birthday'].append(self.table_users.item(item)['values'][3].split('/'))
             return data
 
     # Получаем данные из выделенной пользователем строки в таблице Goods (справа)
@@ -356,17 +357,18 @@ class Main(tk.Frame):
                 EditGoods(self.root, self.main_window_state)
 
     def display_graphic(self):
-        if len(self.table_users.selection()) == 1:
+        if self.table_users.selection() != ():
             user_data = self.get_data_from_user_selection()
-            goods_values = self.get_goods_values_of_user(user_data['user_id'])  # List
-            name = user_data['user_name'][0] + ' ' + user_data['user_name'][1]
-            Graphic(self.root, goods_values, name)
+            for user_id in user_data['user_id']:
+                goods_values.append(self.get_goods_values_of_user(user_id))  # List of lists
+                names.append(user_data['user_name'][0] + ' ' + user_data['user_name'][1])
+            Graphic(self.root, goods_values, names)
 
     def display_diagram(self):
         if len(self.table_users.selection()) == 1:
             user_data = self.get_data_from_user_selection()
-            goods_values = self.get_goods_values_of_user(user_data['user_id'])  # List
-            name = user_data['user_name'][0] + ' ' + user_data['user_name'][1]
+            goods_values.append(self.get_goods_values_of_user(user_data['user_id']))  # List of lists
+            name.append(user_data['user_name'][0] + ' ' + user_data['user_name'][1])
             Diagram(self.root, goods_values, name)
 
     # Удалена, не влезла по размеру, функционал передан кнопке 'Редактировать'
@@ -669,7 +671,7 @@ class EditGoods(AddGoods):
 
 class Graphic(tk.Toplevel):
 
-    def __init__(self, my_root, goods_amounts: list, user_name: str):
+    def __init__(self, my_root, goods_amounts: list, user_name: list):
         super().__init__(my_root)
         self.root = my_root
         self.init_iu(goods_amounts, user_name)
@@ -677,9 +679,9 @@ class Graphic(tk.Toplevel):
     def init_iu(self, goods_amounts, user_name):
         self.title('График покупки товаров клиентом')
 
-        k = '3'
+        k = str(len(goods_amounts))
         figure = plt.figure(dpi=90)
-        graphic = figure.add_subplot(int(k + '11'))
+        graphic = figure.add_subplot(int(k + '31'))
         graphic.plot(MONTH_SHORT, goods_amounts, color='blue', marker='o')
         graphic.set(xlabel='ПЕРИОД', ylabel='КОЛИЧЕСТВО ТОВАРА', title=f'{user_name}')
         graphic.grid()
