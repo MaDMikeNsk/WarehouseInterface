@@ -59,10 +59,3 @@ class DatabaseEngine:
         for record in self.session.query(Goods).filter(Goods.user_id == user_id, Goods.month == month).all():
             result = record.goods
         return result
-
-    # Функция не используется! Кнопка удалена!
-    def reset_goods(self, user_id, month):
-        for goods in self.session.query(Goods).filter(Goods.user_id == user_id,
-                                                      Goods.month == month).all():
-            goods.goods = 0
-        self.session.commit()
