@@ -29,6 +29,7 @@ MONTH = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май',
          'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
 MONTH_SHORT = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июнь',
                'Июль', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
+MONTH_ONE_LETTER = ['Ян', 'Фе', 'Мр', 'Ап', 'Мй', 'Ин', 'Ил', 'Ав', 'Се', 'Ок', 'Но', 'Де']
 YEARS = [x for x in range(1950, 2010)]
 
 
@@ -356,7 +357,7 @@ class Main(tk.Frame):
 
     # Кнопка "График"
     def display_graphic(self):
-        if self.table_users.selection() != ():
+        if 0 < len(self.table_users.selection()) <= 4:
             users_list = self.get_data_from_user_selection()  # list of dict (selected users)
             data_to_display = []
             for user in users_list:
@@ -364,16 +365,23 @@ class Main(tk.Frame):
                 data['user_name'] = user['user_name'][0] + ' ' + user['user_name'][1]
                 data['values'] = self.get_goods_values_of_user(user['user_id'])  # List of goods values
                 data_to_display.append(data)
-
             Graphic(self.root, data_to_display)
+        elif len(self.table_users.selection()) > 4:
+            pass  # TODO info window
 
     # Кнопка "Диаграмма"
     def display_diagram(self):
-        if len(self.table_users.selection()) == 1:
-            user_data = self.get_data_from_user_selection
-            goods_values.append(self.get_goods_values_of_user(user_data['user_id']))  # List of lists
-            name.append(user_data['user_name'][0] + ' ' + user_data['user_name'][1])
-            Diagram(self.root, goods_values, name)
+        if 0 < len(self.table_users.selection()) <= 4:
+            users_list = self.get_data_from_user_selection()  # list of dict (selected users)
+            data_to_display = []
+            for user in users_list:
+                data = dict()
+                data['user_name'] = user['user_name'][0] + ' ' + user['user_name'][1]
+                data['values'] = self.get_goods_values_of_user(user['user_id'])  # List of goods values
+                data_to_display.append(data)
+            Diagram(self.root, data_to_display)
+        elif len(self.table_users.selection()) > 4:
+            pass  # TODO info window
 
     # ==================================================================================================================
     #                          ОБРАБОТКА НАЖАТИЯ КНОПОК В ДОЧЕРНИХ ОКНАХ - РАБОТА С БАЗОЙ ДАННЫХ
@@ -670,19 +678,33 @@ class Graphic(tk.Toplevel):
 
     def init_iu(self, data_to_display):
         self.title('График покупки товаров клиентом')
-        k = str(len(data_to_display))
+        self.geometry('900x900+100+50')
+        k = len(data_to_display)
 
+        month = MONTH_ONE_LETTER
+        if k >= 3:
+            row = 2
+            column = 2
+        elif k == 2:
+            row = 1
+            column = 2
+        else:
+            row = 1
+            column = 1
+            month = MONTH_SHORT
+
+        figure = plt.figure(dpi=90)
+        i = 0
         for data in data_to_display:
-
-            figure = plt.figure(dpi=90)
-            graphic = figure.add_subplot(int(k + '31'))
+            i += 1
+            graphic = figure.add_subplot(int(str(row) + str(column) + str(i)))
             user_name = data['user_name']
-            graphic.plot(MONTH_SHORT, data['values'], color='blue', marker='o')
+            graphic.plot(month, data['values'], color='blue', marker='o')
             graphic.set(xlabel='ПЕРИОД', ylabel='КОЛИЧЕСТВО ТОВАРА', title=f'{user_name}')
             graphic.grid()
 
-            canvas = FigureCanvasTkAgg(figure, self)
-            canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+        canvas = FigureCanvasTkAgg(figure, self)
+        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
         toolbar = NavigationToolbar2Tk(canvas, self)
         toolbar.update()
@@ -690,19 +712,37 @@ class Graphic(tk.Toplevel):
 
 
 class Diagram(tk.Toplevel):
-    def __init__(self, my_root, goods_amounts: list, user_name: str):
+    def __init__(self, my_root, data_to_display: list):
         super().__init__(my_root)
         self.root = my_root
-        self.init_iu(goods_amounts, user_name)
+        self.init_iu(data_to_display)
 
-    def init_iu(self, goods_amounts, user_name):
+    def init_iu(self, data_to_display):
         self.title('Диаграмма покупки товаров клиентом')
+        self.geometry('900x900+100+50')
 
-        # k = '3'
+        k = len(data_to_display)
+
+        month = MONTH_ONE_LETTER
+        if k >= 3:
+            row = 2
+            column = 2
+        elif k == 2:
+            row = 1
+            column = 2
+        else:
+            row = 1
+            column = 1
+            month = MONTH_SHORT
+
         figure = plt.figure(dpi=90)
-        graphic = figure.add_subplot(111)
-        graphic.bar(MONTH_SHORT, goods_amounts)
-        graphic.set(xlabel='ПЕРИОД', ylabel='КОЛИЧЕСТВО ТОВАРА', title=f'{user_name}')
+        i = 0
+        for data in data_to_display:
+            i += 1
+            graphic = figure.add_subplot(int(str(row) + str(column) + str(i)))
+            user_name = data['user_name']
+            graphic.bar(month, data['values'], color='blue')
+            graphic.set(xlabel='ПЕРИОД', ylabel='КОЛИЧЕСТВО ТОВАРА', title=f'{user_name}')
 
         canvas = FigureCanvasTkAgg(figure, self)
         canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
@@ -717,7 +757,6 @@ if __name__ == "__main__":
     db = DatabaseEngine()
     app = Main(root)
     app.pack()
-
     root.title("Warehouse Interface")
     root.geometry("1000x650+300+100")
     root.resizable(False, False)
