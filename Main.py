@@ -717,6 +717,7 @@ if __name__ == "__main__":
     db = DatabaseEngine()
     app = Main(root)
     app.pack()
+
     root.title("Warehouse Interface")
     root.geometry("1000x650+300+100")
     root.resizable(False, False)
