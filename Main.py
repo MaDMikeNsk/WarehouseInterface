@@ -242,7 +242,7 @@ class Main(tk.Frame):
         self.main_window_state['goods_visible'] = is_display
 
     # Получаем данные из выделенных пользователем строк в таблице User (слева)
-    def get_data_from_user_selection(self) -> list:
+    def get_data_from_user_selection(self) -> list:  # List of dicts
         if self.table_users.selection() != ():
             result = []
             for item in self.table_users.selection():
@@ -312,7 +312,7 @@ class Main(tk.Frame):
     # Кнопка 'Редактировать' (под левой таблицей)
     def display_edit_user_window(self):
         if len(self.table_users.selection()) == 1:
-            selected_user = self.get_data_from_user_selection
+            selected_user = self.get_data_from_user_selection()
             EditUser(self.root, selected_user)
 
     # Кнопка 'Удалить запись' (под левой таблицей)
@@ -357,12 +357,15 @@ class Main(tk.Frame):
     # Кнопка "График"
     def display_graphic(self):
         if self.table_users.selection() != ():
-            user_data = self.get_data_from_user_selection
+            users_list = self.get_data_from_user_selection()  # list of dict (selected users)
+            data_to_display = []
+            for user in users_list:
+                data = dict()
+                data['user_name'] = user['user_name'][0] + ' ' + user['user_name'][1]
+                data['values'] = self.get_goods_values_of_user(user['user_id'])  # List of goods values
+                data_to_display.append(data)
 
-            for user_id in user_data['user_id']:
-                goods_values.append(self.get_goods_values_of_user(user_id))  # List of lists
-                names.append(user_data['user_name'][0] + ' ' + user_data['user_name'][1])
-            Graphic(self.root, goods_values, names)
+            Graphic(self.root, data_to_display)
 
     # Кнопка "Диаграмма"
     def display_diagram(self):
@@ -494,11 +497,11 @@ class AddUser(tk.Toplevel):
 
 
 class EditUser(AddUser):
-    def __init__(self, my_root: tk.Tk, current_user_info: dict):
+    def __init__(self, my_root: tk.Tk, current_user_info: list):
         super().__init__(my_root)
         self.entry_first_name_text = \
             self.entry_last_name_text = None
-        self.current_user_info = current_user_info
+        self.current_user_info = current_user_info[0]
         self.init_ui()
 
     def init_ui(self):
@@ -509,12 +512,12 @@ class EditUser(AddUser):
         # Устанавливаем имя
         self.entry_first_name_text = tk.StringVar()
         self.entry_first_name.configure(textvariable=self.entry_first_name_text)
-        self.entry_first_name_text.set(self.current_user_info['user_name'][0][0])
+        self.entry_first_name_text.set(self.current_user_info['user_name'][0])
 
         # Устанавливаем фамилию
         self.entry_last_name_text = tk.StringVar()
         self.entry_last_name.configure(textvariable=self.entry_last_name_text)
-        self.entry_last_name_text.set(self.current_user_info['user_name'][1][1])
+        self.entry_last_name_text.set(self.current_user_info['user_name'][1])
 
         # Устанавливаем дату рождения
         self.combobox_days.current(DAYS.index(int(self.current_user_info['birthday'][0])))
@@ -583,7 +586,7 @@ class AddGoods(tk.Toplevel):
         # ==============================================================================================================
         #                                                     ROW 3
         # ==============================================================================================================
-        label_month = tk.Label(self, text='ТОВАР (+/-):')
+        label_month = tk.Label(self, text='ТОВАР:')
         label_month.place(x=30, y=90)
 
         self.entry_goods = tk.Entry(self, width=13)
@@ -660,23 +663,26 @@ class EditGoods(AddGoods):
 
 class Graphic(tk.Toplevel):
 
-    def __init__(self, my_root, goods_amounts: list, user_name: list):
+    def __init__(self, my_root, data_to_display: list):
         super().__init__(my_root)
         self.root = my_root
-        self.init_iu(goods_amounts, user_name)
+        self.init_iu(data_to_display)
 
-    def init_iu(self, goods_amounts, user_name):
+    def init_iu(self, data_to_display):
         self.title('График покупки товаров клиентом')
+        k = str(len(data_to_display))
 
-        k = str(len(goods_amounts))
-        figure = plt.figure(dpi=90)
-        graphic = figure.add_subplot(int(k + '31'))
-        graphic.plot(MONTH_SHORT, goods_amounts, color='blue', marker='o')
-        graphic.set(xlabel='ПЕРИОД', ylabel='КОЛИЧЕСТВО ТОВАРА', title=f'{user_name}')
-        graphic.grid()
+        for data in data_to_display:
 
-        canvas = FigureCanvasTkAgg(figure, self)
-        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+            figure = plt.figure(dpi=90)
+            graphic = figure.add_subplot(int(k + '31'))
+            user_name = data['user_name']
+            graphic.plot(MONTH_SHORT, data['values'], color='blue', marker='o')
+            graphic.set(xlabel='ПЕРИОД', ylabel='КОЛИЧЕСТВО ТОВАРА', title=f'{user_name}')
+            graphic.grid()
+
+            canvas = FigureCanvasTkAgg(figure, self)
+            canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
         toolbar = NavigationToolbar2Tk(canvas, self)
         toolbar.update()
