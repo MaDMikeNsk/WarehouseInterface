@@ -18,7 +18,6 @@ c) менять диапазон времени для графиков -  ме�
 
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-# from matplotlib.figure import Figure
 from src.DatabaseEngine import DatabaseEngine
 from src.TableItems import User, Goods
 import tkinter as tk
@@ -158,10 +157,6 @@ class Main(tk.Frame):
         button_edit_goods = tk.Button(image=self.edit_image, command=lambda: self.display_edit_goods_window(), bd=0)
         button_edit_goods.place(x=810, y=360)
 
-        # !!!Кнопка временно удалена
-        """button_delete_goods = tk.Button(text='Обнулить  запись', command=lambda: self.reset_goods())
-        button_delete_goods.place(x=844, y=360)"""
-
         # ==============================================================================================================
         #                                          КНОПКИ МЕЖДУ ТАБЛИЦАМИ
         # ==============================================================================================================
@@ -235,10 +230,10 @@ class Main(tk.Frame):
     # Клик на стрелку
     def on_click_arrow_button(self):
         if len(self.table_users.selection()) == 1:
-            selected_user = self.get_data_from_user_selection()
-            self.display_table_user_goods(selected_user['user_id'][0])
-            self.main_window_state['user_id'] = selected_user['user_id'][0]
-            self.main_window_state['user_name'] = selected_user['user_name'][0]
+            selected_user = self.get_data_from_user_selection()[0]
+            self.display_table_user_goods(selected_user['user_id'])
+            self.main_window_state['user_id'] = selected_user['user_id']
+            self.main_window_state['user_name'] = selected_user['user_name']
             self.main_window_state['goods_visible'] = True
 
     def set_main_window_state(self, user_id=None, user_name=None, is_display=None):
@@ -247,19 +242,21 @@ class Main(tk.Frame):
         self.main_window_state['goods_visible'] = is_display
 
     # Получаем данные из выделенных пользователем строк в таблице User (слева)
-    def get_data_from_user_selection(self) -> dict:
+    def get_data_from_user_selection(self) -> list:
         if self.table_users.selection() != ():
-            data = {'user_id': [], 'user_name': [], 'birthday': []}
+            result = []
             for item in self.table_users.selection():
-                data['user_id'].append(self.table_users.item(item)['values'][0])
-                data['user_name'].append([self.table_users.item(item)['values'][2] + '' +
-                                            self.table_users.item(item)['values'][1]])
-                data['birthday'].append(self.table_users.item(item)['values'][3].split('/'))
-            return data
+                user_data = dict()
+                user_data['user_id'] = self.table_users.item(item)['values'][0]
+                user_data['user_name'] = [self.table_users.item(item)['values'][2],
+                                          self.table_users.item(item)['values'][1]]
+                user_data['birthday'] = self.table_users.item(item)['values'][3].split('/')
+                result.append(user_data)
+            return result
 
     # Получаем данные из выделенной пользователем строки в таблице Goods (справа)
     def get_data_from_goods_selection(self) -> dict:
-        if self.table_goods.selection() != ():
+        if len(self.table_goods.selection()) == 1:
             data = {'user_id': None,
                     'user_name': self.main_window_state['user_name'],
                     'month': None,
@@ -315,23 +312,24 @@ class Main(tk.Frame):
     # Кнопка 'Редактировать' (под левой таблицей)
     def display_edit_user_window(self):
         if len(self.table_users.selection()) == 1:
-            selected_user = self.get_data_from_user_selection()
+            selected_user = self.get_data_from_user_selection
             EditUser(self.root, selected_user)
 
     # Кнопка 'Удалить запись' (под левой таблицей)
     def delete_user_from_db(self):
-        if len(self.table_users.selection()) == 1:
-            # Получаем ID пользователя, которого выбрали в таблице
-            current_user = self.get_data_from_user_selection()
+        if len(self.table_users.selection()) != ():
+            # Получаем ID пользователей, которых выбрали в таблице
+            selected_users = self.get_data_from_user_selection()
 
             # Удаляем из базы пользователя и все записи из 2-й таблицы по его ID
-            self.db.delete_user(current_user['user_id'])
-            self.db.delete_goods(current_user['user_id'])
+            for user in selected_users:
+                self.db.delete_user(user['user_id'])
+                self.db.delete_goods(user['user_id'])
 
-            # Если отображалась таблица его товаров - удаляем её и сбрасываем параметры main_window_state
-            if self.main_window_state['user_id'] == current_user['user_id']:
-                [self.table_goods.delete(i) for i in self.table_goods.get_children()]
-                self.set_main_window_state(user_id='', is_display=False)
+                # Если отображалась таблица его товаров - удаляем её и сбрасываем параметры main_window_state
+                if self.main_window_state['user_id'] == user['user_id']:
+                    [self.table_goods.delete(i) for i in self.table_goods.get_children()]
+                    self.set_main_window_state(user_id='', is_display=False)
 
             # Пересчитываем параметры 'ИТОГО' и выводим обновлённую таблицу пользователей
             self.update_label_total_user_info()
@@ -356,32 +354,23 @@ class Main(tk.Frame):
             else:
                 EditGoods(self.root, self.main_window_state)
 
+    # Кнопка "График"
     def display_graphic(self):
         if self.table_users.selection() != ():
-            user_data = self.get_data_from_user_selection()
+            user_data = self.get_data_from_user_selection
+
             for user_id in user_data['user_id']:
                 goods_values.append(self.get_goods_values_of_user(user_id))  # List of lists
                 names.append(user_data['user_name'][0] + ' ' + user_data['user_name'][1])
             Graphic(self.root, goods_values, names)
 
+    # Кнопка "Диаграмма"
     def display_diagram(self):
         if len(self.table_users.selection()) == 1:
-            user_data = self.get_data_from_user_selection()
+            user_data = self.get_data_from_user_selection
             goods_values.append(self.get_goods_values_of_user(user_data['user_id']))  # List of lists
             name.append(user_data['user_name'][0] + ' ' + user_data['user_name'][1])
             Diagram(self.root, goods_values, name)
-
-    # Удалена, не влезла по размеру, функционал передан кнопке 'Редактировать'
-    """# Кнопка 'Обнулить запись' (под правой таблицей) 
-    def reset_goods(self):
-        if self.table_goods.selection() != ():
-            # Получаем данные из выделенной строки в таблице Goods и обнуляем поле 'Товар' в этой строке
-            current_goods = self.get_data_from_goods_selection()
-            self.db.reset_goods(current_goods['user_id'], current_goods['month'])
-
-            # Обновляем таблицу товаров и данные 'ИТОГО'
-            self.display_table_user_goods(self.main_window_state['user_id'])
-            self.update_label_total_goods_per_month()"""
 
     # ==================================================================================================================
     #                          ОБРАБОТКА НАЖАТИЯ КНОПОК В ДОЧЕРНИХ ОКНАХ - РАБОТА С БАЗОЙ ДАННЫХ
@@ -520,12 +509,12 @@ class EditUser(AddUser):
         # Устанавливаем имя
         self.entry_first_name_text = tk.StringVar()
         self.entry_first_name.configure(textvariable=self.entry_first_name_text)
-        self.entry_first_name_text.set(self.current_user_info['user_name'][0])
+        self.entry_first_name_text.set(self.current_user_info['user_name'][0][0])
 
         # Устанавливаем фамилию
         self.entry_last_name_text = tk.StringVar()
         self.entry_last_name.configure(textvariable=self.entry_last_name_text)
-        self.entry_last_name_text.set(self.current_user_info['user_name'][1])
+        self.entry_last_name_text.set(self.current_user_info['user_name'][1][1])
 
         # Устанавливаем дату рождения
         self.combobox_days.current(DAYS.index(int(self.current_user_info['birthday'][0])))
