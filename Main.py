@@ -22,7 +22,9 @@ from src.DatabaseEngine import DatabaseEngine
 from src.TableItems import User, Goods
 import tkinter as tk
 import matplotlib.pyplot as plt
-# import numpy as np
+from src.Graphic import Graphic
+from src.Diagram import Diagram
+from src.AppManager import AppManager
 
 DAYS = [x for x in range(1, 32)]
 MONTH = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
@@ -341,8 +343,8 @@ class Main(tk.Frame):
     def display_add_goods_window(self):
         if self.main_window_state['user_id'] != '':
             if self.table_goods.selection() != ():
-                selected_user = self.get_data_from_goods_selection()
-                AddGoods(self.root, selected_user)
+                data = self.get_data_from_goods_selection()
+                AddGoods(self.root, data)
             else:
                 AddGoods(self.root, self.main_window_state)
 
@@ -556,7 +558,8 @@ class AddGoods(tk.Toplevel):
         self.label_client_info = \
             self.entry_goods = \
             self.combobox_month = \
-            self.button_edit = None
+            self.button_edit = \
+            self.button_add = None
         self.main_window_data = main_window_data
         self.main_window = app  # Главное окно
         self.init_window()
@@ -669,93 +672,11 @@ class EditGoods(AddGoods):
             self.destroy()
 
 
-class Graphic(tk.Toplevel):
-
-    def __init__(self, my_root, data_to_display: list):
-        super().__init__(my_root)
-        self.root = my_root
-        self.init_iu(data_to_display)
-
-    def init_iu(self, data_to_display):
-        self.title('График покупки товаров клиентом')
-        self.geometry('900x900+100+50')
-        k = len(data_to_display)
-
-        month = MONTH_ONE_LETTER
-        if k >= 3:
-            row = 2
-            column = 2
-        elif k == 2:
-            row = 1
-            column = 2
-        else:
-            row = 1
-            column = 1
-            month = MONTH_SHORT
-
-        figure = plt.figure(dpi=90)
-        i = 0
-        for data in data_to_display:
-            i += 1
-            graphic = figure.add_subplot(int(str(row) + str(column) + str(i)))
-            user_name = data['user_name']
-            graphic.plot(month, data['values'], color='blue', marker='o')
-            graphic.set(xlabel='ПЕРИОД', ylabel='КОЛИЧЕСТВО ТОВАРА', title=f'{user_name}')
-            graphic.grid()
-
-        canvas = FigureCanvasTkAgg(figure, self)
-        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-
-        toolbar = NavigationToolbar2Tk(canvas, self)
-        toolbar.update()
-        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
-
-class Diagram(tk.Toplevel):
-    def __init__(self, my_root, data_to_display: list):
-        super().__init__(my_root)
-        self.root = my_root
-        self.init_iu(data_to_display)
-
-    def init_iu(self, data_to_display):
-        self.title('Диаграмма покупки товаров клиентом')
-        self.geometry('900x900+100+50')
-
-        k = len(data_to_display)
-
-        month = MONTH_ONE_LETTER
-        if k >= 3:
-            row = 2
-            column = 2
-        elif k == 2:
-            row = 1
-            column = 2
-        else:
-            row = 1
-            column = 1
-            month = MONTH_SHORT
-
-        figure = plt.figure(dpi=90)
-        i = 0
-        for data in data_to_display:
-            i += 1
-            graphic = figure.add_subplot(int(str(row) + str(column) + str(i)))
-            user_name = data['user_name']
-            graphic.bar(month, data['values'], color='blue')
-            graphic.set(xlabel='ПЕРИОД', ylabel='КОЛИЧЕСТВО ТОВАРА', title=f'{user_name}')
-
-        canvas = FigureCanvasTkAgg(figure, self)
-        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-
-        toolbar = NavigationToolbar2Tk(canvas, self)
-        toolbar.update()
-        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
-
 if __name__ == "__main__":
     root = tk.Tk()
     db = DatabaseEngine()
     app = Main(root)
+    app_manager = AppManager(app, root)
     app.pack()
     root.title("Warehouse Interface")
     root.geometry("1000x650+300+100")
