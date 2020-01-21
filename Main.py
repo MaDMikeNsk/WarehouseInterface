@@ -16,12 +16,13 @@ b)динамически обновлять графики - если измен
 c) менять диапазон времени для графиков -  меню, где можно задать oX min и oX max
 """
 
+import tkinter as tk
+import matplotlib.pyplot as plt
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from src.DatabaseEngine import DatabaseEngine
 from src.TableItems import User, Goods
-import tkinter as tk
-import matplotlib.pyplot as plt
+from tkinter import messagebox as mb
 from src.Graphic import Graphic
 from src.Diagram import Diagram
 from src.AppManager import AppManager
@@ -54,7 +55,8 @@ class Main(tk.Frame):
             self.cancel_image = \
             self.arrow_image = \
             self.graphic_image = \
-            self.diagram_image = None
+            self.diagram_image = \
+            self.label_current_displayed_user = None
 
         self.main_window_state = {'user_id': '',
                                   'user_name': [],
@@ -88,6 +90,8 @@ class Main(tk.Frame):
         self.label_total_goods_per_month = tk.Label(font=('Adobe Clean Light', 17, 'italic'), fg='dark blue')
         self.label_total_goods_per_month.place(x=310, y=550)
 
+        self.label_current_displayed_user = tk.Label(font=('Adobe Clean Light', 14, 'italic'), fg='green')
+        self.label_current_displayed_user.place(x=650, y=50)
         # ==============================================================================================================
         #                                        ТАБЛИЦА ПОЛЬЗОВАТЕЛЕЙ (СЛЕВА)
         # ==============================================================================================================
@@ -238,6 +242,8 @@ class Main(tk.Frame):
             self.main_window_state['user_id'] = selected_user['user_id']
             self.main_window_state['user_name'] = selected_user['user_name']
             self.main_window_state['goods_visible'] = True
+            self.label_current_displayed_user.\
+                config(text=f"{selected_user['user_name'][0]} {selected_user['user_name'][1]}")
 
     def set_main_window_state(self, user_id=None, user_name=None, is_display=None):
         self.main_window_state['user_id'] = user_id
@@ -329,10 +335,12 @@ class Main(tk.Frame):
                 self.db.delete_user(user['user_id'])
                 self.db.delete_goods(user['user_id'])
 
-                # Если отображалась таблица его товаров - удаляем её и сбрасываем параметры main_window_state
+                # Если отображалась таблица его товаров - удаляем её и
+                # сбрасываем параметры main_window_state, скрываем метку с именем отображаемого клиента
                 if self.main_window_state['user_id'] == user['user_id']:
                     [self.table_goods.delete(i) for i in self.table_goods.get_children()]
                     self.set_main_window_state(user_id='', is_display=False)
+                    self.label_current_displayed_user.config(text='')
 
             # Пересчитываем параметры 'ИТОГО' и выводим обновлённую таблицу пользователей
             self.update_label_total_user_info()
@@ -369,7 +377,7 @@ class Main(tk.Frame):
                 data_to_display.append(data)
             Graphic(self.root, data_to_display)
         elif len(self.table_users.selection()) > 4:
-            pass  # TODO info window
+            mb.showerror("Ошибка", "Выберите не более четырех клиентов")
 
     # Кнопка "Диаграмма"
     def display_diagram(self):
@@ -383,7 +391,7 @@ class Main(tk.Frame):
                 data_to_display.append(data)
             Diagram(self.root, data_to_display)
         elif len(self.table_users.selection()) > 4:
-            pass  # TODO info window
+            mb.showerror("Ошибка", "Выберите не более четырех клиентов")
 
     # ==================================================================================================================
     #                          ОБРАБОТКА НАЖАТИЯ КНОПОК В ДОЧЕРНИХ ОКНАХ - РАБОТА С БАЗОЙ ДАННЫХ

@@ -18,7 +18,6 @@ class Diagram(tk.Toplevel):
     def init_iu(self, data_to_display):
         self.title('Диаграмма покупки товаров клиентом')
         self.geometry('900x900+100+50')
-
         k = len(data_to_display)
 
         month = MONTH_ONE_LETTER
