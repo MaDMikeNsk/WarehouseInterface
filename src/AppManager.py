@@ -29,7 +29,7 @@ class AppManager:
 
     # Кнопка 'Добавить' (под правой таблицей)
     def display_add_goods_window(self):
-        if self.main_app.main_window_state['user_id'] != '':
+        if self.main_app.main_window_state['user_id']:
             if self.main_app.table_goods.selection() != ():
                 data = self.main_app.get_data_from_goods_selection()  # dict
                 AddGoods(self.root, self.main_app, data)
