@@ -51,21 +51,31 @@ class Main(tk.Frame):
 
     def init_main(self):
         # ==============================================================================================================
-        #                                            МЕТКИ ГЛАВНОГО ОКНА
+        #                                                МЕТКИ
         # ==============================================================================================================
+        # Статические метки
         tk.Label(text='Список клиентов', font=('Adobe Clean Light', 18, 'bold')).place(x=140, y=20)
         tk.Label(text='Куплено товара', font=('Adobe Clean Light', 18, 'bold')).place(x=710, y=20)
         tk.Label(text='Всего клиентов:', font=('Adobe Clean Light', 16, 'bold')).place(x=20, y=500)
         tk.Label(text='Куплено за месяц ', font=('Adobe Clean Light', 16, 'bold')).place(x=20, y=550)
 
+        # Метка для имени пользователя, чья таблица товаров в данный момент на экране
+        self.label_current_displayed_user = tk.Label(font=('Adobe Clean Light', 14, 'italic'), fg='green')
+        self.label_current_displayed_user.place(x=650, y=50)
+        # ==============================================================================================================
+        #                                    ОТОБРАЖЕНИЕ ДАННЫХ 'ИТОГО'
+        # ==============================================================================================================
+        # Метки данных итого
         self.label_total_user_info = tk.Label(font=('Adobe Clean Light', 17, 'italic'), fg='dark blue')
         self.label_total_user_info.place(x=200, y=500)
-
         self.label_total_goods_per_month = tk.Label(font=('Adobe Clean Light', 17, 'italic'), fg='dark blue')
         self.label_total_goods_per_month.place(x=310, y=550)
 
-        self.label_current_displayed_user = tk.Label(font=('Adobe Clean Light', 14, 'italic'), fg='green')
-        self.label_current_displayed_user.place(x=650, y=50)
+        # Выпадающий спиок месяцев
+        self.combobox_month = ttk.Combobox(values=MONTH, width=10, state='readonly')
+        self.combobox_month.bind("<<ComboboxSelected>>", lambda event: self.callback())
+        self.combobox_month.current(0)
+        self.combobox_month.place(x=215, y=557)
 
         # ==============================================================================================================
         #                                        ТАБЛИЦА ПОЛЬЗОВАТЕЛЕЙ (СЛЕВА)
@@ -95,15 +105,19 @@ class Main(tk.Frame):
         # ==============================================================================================================
         #                                      КНОПКИ ПОД ТАБЛИЦЕЙ ПОЛЬЗОВАТЕЛЕЙ
         # ==============================================================================================================
-        self.add_img = tk.PhotoImage(file='image/add.png')
+        # Добавить
+        self.add_img = tk.PhotoImage(file='image/add.png')  # Allowed PPM, PNG, JPEG, GIF, TIFF and BMP.
         tk.Button(image=self.add_img, command=lambda: app_manager.display_add_user_window(), bd=0).place(x=15, y=420)
 
+        # Редактировать
         self.edit_img = tk.PhotoImage(file='image/edit.png')
         tk.Button(image=self.edit_img, command=lambda: app_manager.display_edit_user_window(), bd=0).place(x=172, y=420)
 
+        # Удалить
         self.delete_img = tk.PhotoImage(file='image/delete.png')
-        tk.Button(image=self.delete_img, command=lambda: self.delete_user_from_db(), bd=0).place(x=330, y=420)
+        tk.Button(image=self.delete_img, command=lambda: app_manager.delete_user_from_db(), bd=0).place(x=330, y=420)
 
+        # Иконка кнопки 'Отмена'
         self.cancel_img = tk.PhotoImage(file='image/cancel.png')
 
         # ==============================================================================================================
@@ -129,34 +143,28 @@ class Main(tk.Frame):
         # ==============================================================================================================
         #                                        КНОПКИ ПОД ТАБЛИЦЕЙ ТОВАРОВ
         # ==============================================================================================================
+        # Добавить
         btn_add_goods = tk.Button(image=self.add_img, command=lambda: app_manager.display_add_goods_window(), bd=0)
         btn_add_goods.place(x=652, y=360)
 
+        # Редактировать
         btn_edit_goods = tk.Button(image=self.edit_img, command=lambda: app_manager.display_edit_goods_window(), bd=0)
         btn_edit_goods.place(x=810, y=360)
 
         # ==============================================================================================================
         #                                          КНОПКИ МЕЖДУ ТАБЛИЦАМИ
         # ==============================================================================================================
-        # Arrow button
-        self.arrow_image = tk.PhotoImage(file='image/arrow.png')  # Allowed PPM, PNG, JPEG, GIF, TIFF and BMP.
-        tk.Button(command=lambda: self.on_click_arrow_button(), image=self.arrow_image, bd=0).place(x=525, y=110)
+        # Arrow
+        self.arrow_image = tk.PhotoImage(file='image/arrow.png')
+        tk.Button(image=self.arrow_image, bd=0, command=lambda: app_manager.on_click_arrow_button()).place(x=525, y=110)
 
-        # Graphic button
+        # Graphic
         self.graphic_image = tk.PhotoImage(file='image/graphic.png')
-        tk.Button(image=self.graphic_image, bd=0, command=lambda: self.display_graphic()).place(x=530, y=200)
+        tk.Button(image=self.graphic_image, bd=0, command=lambda: app_manager.display_graphic()).place(x=530, y=200)
 
-        # Diagram button
+        # Diagram
         self.diagram_image = tk.PhotoImage(file='image/diagram.png')
-        tk.Button(image=self.diagram_image, bd=0, command=lambda: self.display_diagram()).place(x=530, y=310)
-
-        # ==============================================================================================================
-        #                                    COMBOBOX ДЛЯ ОТОБРАЖЕНИЯ ДАННЫХ 'ИТОГО'
-        # ==============================================================================================================
-        self.combobox_month = ttk.Combobox(values=MONTH, width=10, state='readonly')
-        self.combobox_month.bind("<<ComboboxSelected>>", lambda event: self.callback())
-        self.combobox_month.current(0)
-        self.combobox_month.place(x=215, y=557)
+        tk.Button(image=self.diagram_image, bd=0, command=lambda: app_manager.display_diagram()).place(x=530, y=310)
 
         # ==============================================================================================================
         #                                            КОНСТРУИРУЕМ 'МЕНЮ'
@@ -205,17 +213,7 @@ class Main(tk.Frame):
                 return string[1:].isdigit()
             return string.isdigit()
 
-    # Клик на стрелку
-    def on_click_arrow_button(self):
-        if len(self.table_users.selection()) == 1:
-            selected_user = self.get_data_from_user_selection()[0]
-            self.display_table_user_goods(selected_user['user_id'])
-            self.main_window_state['user_id'] = selected_user['user_id']
-            self.main_window_state['user_name'] = selected_user['user_name']
-            self.main_window_state['goods_visible'] = True
-            self.label_current_displayed_user.\
-                config(text=f"{selected_user['user_name'][0]} {selected_user['user_name'][1]}")
-
+    # Сеттер для переменной состояния главного окна
     def set_main_window_state(self, user_id=None, user_name=None, is_display=None):
         self.main_window_state['user_id'] = user_id
         self.main_window_state['user_name'] = user_name
@@ -247,6 +245,17 @@ class Main(tk.Frame):
                 data['goods'] = self.table_goods.item(item)['values'][3]
             return data
 
+    # Используем функцию при вызове окна 'Редактировать количество товара', получаем значение для вставки в поле ввода
+    def get_goods_amount(self, user_id, month):
+        return self.db.get_goods_amount(user_id, month)
+
+    # Получаем лист значений кол-ва товара по месяцам для пользователя user_id, для отрисовки графика
+    def get_goods_values_of_user(self, user_id) -> list:
+        result = []
+        for index in range(12):
+            result.append(int(self.get_goods_amount(user_id, MONTH[index])))
+        return result
+
     # ==================================================================================================================
     #                                          ФУНКЦИИ ОБНОВЛЕНИЯ ДАННЫХ 'ИТОГО'
     # ==================================================================================================================
@@ -254,11 +263,11 @@ class Main(tk.Frame):
     def callback(self):
         self.update_label_total_goods_per_month()
 
-    # Метод для обновления информации о кол-ве клиентов
+    # Метод для обновления текста метки с информацией о кол-ве клиентов
     def update_label_total_user_info(self):
         self.label_total_user_info.config(text=len(self.db.session.query(User).filter().all()))
 
-    # Метод для обновления информации о кол-ве товара, купленого ВСЕМИ клиентами в выбранный месяц
+    # Метод для обновления текста метки с информацией о кол-ве товара, купленого ВСЕМИ клиентами в выбранный месяц
     def update_label_total_goods_per_month(self):
         if self.label_total_user_info['text'] != '0':
             res = 0
@@ -281,114 +290,6 @@ class Main(tk.Frame):
         [self.table_goods.delete(i) for i in self.table_goods.get_children()]
         [self.table_goods.insert('', 'end', values=(goods.id, goods.user_id, goods.month, goods.goods))
          for goods in self.db.session.query(Goods).filter(Goods.user_id == user_id).all()]
-
-    # ==================================================================================================================
-    #                                  ФУНКЦИИ ДЛЯ ОБРАБОТКИ НАЖАТИЯ КНОПОК ПОД ТАБЛИЦАМИ
-    # ==================================================================================================================
-    # Кнопка 'Добавить' (под левой таблицей)
-    # def display_add_user_window(self):
-    #   AddUser(self.root)
-
-    # Кнопка 'Редактировать' (под левой таблицей)
-    # def display_edit_user_window(self):
-    #    if len(self.table_users.selection()) == 1:
-    #        selected_user = self.get_data_from_user_selection()
-    #        EditUser(self.root, selected_user)
-
-    # Кнопка 'Удалить запись' (под левой таблицей)
-    def delete_user_from_db(self):
-        if len(self.table_users.selection()) != ():
-            # Получаем ID пользователей, которых выбрали в таблице
-            selected_users = self.get_data_from_user_selection()
-
-            # Удаляем из базы пользователя и все записи из 2-й таблицы по его ID
-            for user in selected_users:
-                self.db.delete_user(user['user_id'])
-                self.db.delete_goods(user['user_id'])
-
-                # Если отображалась таблица его товаров - удаляем её и
-                # сбрасываем параметры main_window_state, скрываем метку с именем отображаемого клиента
-                if self.main_window_state['user_id'] == user['user_id']:
-                    [self.table_goods.delete(i) for i in self.table_goods.get_children()]
-                    self.set_main_window_state(user_id='', is_display=False)
-                    self.label_current_displayed_user.config(text='')
-
-            # Пересчитываем параметры 'ИТОГО' и выводим обновлённую таблицу пользователей
-            self.update_label_total_user_info()
-            self.update_label_total_goods_per_month()
-            self.display_table_users()
-
-    # Кнопка 'Добавить' (под правой таблицей)
-    def display_add_goods_window(self):
-        if self.main_window_state['user_id'] != '':
-            if self.table_goods.selection() != ():
-                data = self.get_data_from_goods_selection()
-                AddGoods(self.root, data)
-            else:
-                AddGoods(self.root, self.main_window_state)
-
-    # Кнопка 'Редактировать' (под правой таблицей)
-    def display_edit_goods_window(self):
-        if self.main_window_state['goods_visible']:
-            if self.table_goods.selection() != ():
-                selected_goods = self.get_data_from_goods_selection()
-                EditGoods(self.root, selected_goods)
-            else:
-                EditGoods(self.root, self.main_window_state)
-
-    # Кнопка "График"
-    def display_graphic(self):
-        if 0 < len(self.table_users.selection()) <= 4:
-            users_list = self.get_data_from_user_selection()  # list of dict (selected users)
-            data_to_display = []
-            for user in users_list:
-                data = dict()
-                data['user_name'] = user['user_name'][0] + ' ' + user['user_name'][1]
-                data['values'] = self.get_goods_values_of_user(user['user_id'])  # List of goods values
-                data_to_display.append(data)
-            Graphic(self.root, data_to_display)
-        elif len(self.table_users.selection()) > 4:
-            mb.showerror("Ошибка", "Выберите не более четырех клиентов")
-
-    # Кнопка "Диаграмма"
-    def display_diagram(self):
-        if 0 < len(self.table_users.selection()) <= 4:
-            users_list = self.get_data_from_user_selection()  # list of dict (selected users)
-            data_to_display = []
-            for user in users_list:
-                data = dict()
-                data['user_name'] = user['user_name'][0] + ' ' + user['user_name'][1]
-                data['values'] = self.get_goods_values_of_user(user['user_id'])  # List of goods values
-                data_to_display.append(data)
-            Diagram(self.root, data_to_display)
-        elif len(self.table_users.selection()) > 4:
-            mb.showerror("Ошибка", "Выберите не более четырех клиентов")
-
-    # ==================================================================================================================
-    #                          ОБРАБОТКА НАЖАТИЯ КНОПОК В ДОЧЕРНИХ ОКНАХ - РАБОТА С БАЗОЙ ДАННЫХ
-    # ==================================================================================================================
-    # Кнопка 'Добавить' в окне AddGoods
-    def update_goods_in_db(self, user_id, month, goods):
-        self.db.add_goods_for_this_month(user_id, month, goods)
-        self.update_label_total_goods_per_month()
-        self.display_table_user_goods(user_id)
-
-    # Кнопка 'Редактировать' в окне EditGoods
-    def edit_goods_in_db(self, user_id, month, goods):
-        self.db.update_goods(user_id, month, goods)
-        self.update_label_total_goods_per_month()
-        self.display_table_user_goods(user_id)
-
-    # Используем функцию при вызове окна 'Редактировать количество товара', получаем значение для вставки в поле ввода
-    def get_goods_amount(self, user_id, month):
-        return self.db.get_goods_amount(user_id, month)
-
-    # Получаем лист значений кол-ва товара по месяцам для пользователя user_id, для отрисовки графика
-    def get_goods_values_of_user(self, user_id) -> list:
-        result = []
-        for index in range(12):
-            result.append(int(self.get_goods_amount(user_id, MONTH[index])))
-        return result
 
 
 if __name__ == "__main__":

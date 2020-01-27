@@ -64,7 +64,9 @@ class AddGoods(tk.Toplevel):
         goods_amount = self.entry_goods.get()
         if goods_amount.isdigit():
             # Если то, что ввели, является целым числом (со знаком или без), то вызываем функции из ГЛАВНОГО окна
-            self.main_app.update_goods_in_db(user_id=self.main_window_data['user_id'],
-                                             month=self.combobox_month.get(),
-                                             goods=int(goods_amount))
+            self.main_app.db.add_goods_for_this_month(user_id=self.main_app.main_window_state['user_id'],
+                                                      month=self.combobox_month.get(),
+                                                      goods=int(goods_amount))
+            self.main_app.update_label_total_goods_per_month()
+            self.main_app.display_table_user_goods(self.main_app.main_window_state['user_id'])
             self.destroy()

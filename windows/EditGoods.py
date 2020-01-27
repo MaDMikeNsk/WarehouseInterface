@@ -38,7 +38,7 @@ class EditGoods(AddGoods):
     # Действие при выборе месяца - отображаем кол-во товара в поле ввода для этого месяца
     def on_click_month_box(self):
         current_month = self.combobox_month.get()
-        self.entry_text.set(self.main_app.get_goods_amount(self.main_window_data['user_id'], current_month))
+        self.entry_text.set(self.main_app.get_goods_amount(self.main_app.main_window_state['user_id'], current_month))
 
     # Обработка нажатия на кнопку 'Редактировать'
     def on_click(self):
@@ -46,9 +46,9 @@ class EditGoods(AddGoods):
         # if self.main_app.is_int(goods_amount):  Функция не нужна, отрицательные значения не берём
         if goods_amount.isdigit():
             # Если то, что ввели, является целым числом (со знаком или без), то вызываем функции из ГЛАВНОГО окна
-            self.main_app.db.update_goods(user_id=self.main_window_data['user_id'],
+            self.main_app.db.update_goods(user_id=self.main_app.main_window_state['user_id'],
                                           month=self.combobox_month.get(),
                                           goods=int(goods_amount))
             self.main_app.update_label_total_goods_per_month()
-            self.main_app.display_table_user_goods(self.main_window_data['user_id'])
+            self.main_app.display_table_user_goods(self.main_app.main_window_state['user_id'])
             self.destroy()

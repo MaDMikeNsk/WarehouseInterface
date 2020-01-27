@@ -51,4 +51,11 @@ class EditUser(AddUser):
         if first_name + last_name != '':
             self.main_app.db.update_user(user_id, first_name, last_name, birthday)
             self.main_app.display_table_users()
-            self.destroy()
+
+            # Если отображалась таблица для текущего клиента, то меняем метку с именем и
+            if self.current_user_info['user_id'] == self.main_app.main_window_state['user_id']:
+                self.main_app.label_current_displayed_user.config(text=f"{first_name} {last_name}")
+                self.main_app.set_main_window_state(user_id=self.current_user_info['user_id'],
+                                                    user_name=[first_name, last_name],
+                                                    is_display=True)
+        self.destroy()
