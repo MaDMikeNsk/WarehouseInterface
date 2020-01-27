@@ -54,7 +54,7 @@ class DatabaseEngine:
         self.session.commit()
 
     # функция нужна для отображени текущего значения goods у пользователя при выборе месяца в окне 'Редактировать товар'
-    def get_goods_amount(self, user_id, month):
+    def get_goods_amount(self, user_id, month) -> str:
         result = ''
         for record in self.session.query(Goods).filter(Goods.user_id == user_id, Goods.month == month).all():
             result = record.goods

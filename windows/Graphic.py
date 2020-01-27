@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 MONTH_ONE_LETTER = ['Ян', 'Фе', 'Мр', 'Ап', 'Мй', 'Ин', 'Ил', 'Ав', 'Се', 'Ок', 'Но', 'Де']
 MONTH_SHORT = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июнь',
                'Июль', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
+YEARS = [x for x in range(1950, 2010)]
 
 
 class Graphic(tk.Toplevel):
