@@ -3,7 +3,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 import matplotlib.pyplot as plt
 
 
-MONTH_ONE_LETTER = ['Ян', 'Фе', 'Мр', 'Ап', 'Мй', 'Ин', 'Ил', 'Ав', 'Се', 'Ок', 'Но', 'Де']
+MONTH_TWO_LETTERS = ['Ян', 'Фе', 'Мр', 'Ап', 'Мй', 'Ин', 'Ил', 'Ав', 'Се', 'Ок', 'Но', 'Де']
 MONTH_SHORT = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июнь',
                'Июль', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
 YEARS = [x for x in range(1950, 2010)]
@@ -21,7 +21,7 @@ class Graphic(tk.Toplevel):
         self.geometry('900x900+100+50')
         k = len(data_to_display)
 
-        month = MONTH_ONE_LETTER
+        month = MONTH_TWO_LETTERS
         if k >= 3:
             row = 2
             column = 2

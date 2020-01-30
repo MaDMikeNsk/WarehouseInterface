@@ -12,7 +12,7 @@ MONTH = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май',
          'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
 MONTH_SHORT = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июнь',
                'Июль', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
-MONTH_ONE_LETTER = ['Ян', 'Фе', 'Мр', 'Ап', 'Мй', 'Ин', 'Ил', 'Ав', 'Се', 'Ок', 'Но', 'Де']
+MONTH_TWO_LETTER = ['Ян', 'Фе', 'Мр', 'Ап', 'Мй', 'Ин', 'Ил', 'Ав', 'Се', 'Ок', 'Но', 'Де']
 YEARS = [x for x in range(1950, 2010)]
 
 
@@ -28,7 +28,8 @@ class Main(tk.Frame):
             self.combobox_month = \
             self.label_total_user_info = \
             self.label_total_goods_per_month = \
-            self.menu_bar = None
+            self.menu_bar = \
+            self.search_entry = None
 
         self.add_img = \
             self.edit_img = \
@@ -47,7 +48,7 @@ class Main(tk.Frame):
         # Инициализация состояния главного окна при первом запуске
         self.update_label_total_user_info()
         self.update_label_total_goods_per_month()
-        self.display_table_users()
+        self.display_all_users_table()
 
     def init_main(self):
         # ==============================================================================================================
@@ -61,7 +62,19 @@ class Main(tk.Frame):
 
         # Метка для имени пользователя, чья таблица товаров в данный момент на экране
         self.label_current_displayed_user = tk.Label(font=('Adobe Clean Light', 14, 'italic'), fg='green')
-        self.label_current_displayed_user.place(x=650, y=50)
+        self.label_current_displayed_user.place(x=650, y=60)
+
+        # ==============================================================================================================
+        #                                           ПОИСК ПО ИМЕНИ
+        # ==============================================================================================================
+        tk.Label(text='Поиск:', font=('Adobe Clean Light', 14, 'italic')).place(x=25, y=60)
+        # Поле ввода
+        self.search_entry = tk.Entry()
+        self.search_entry.place(x=85, y=67)
+        # Кнопки
+        tk.Button(text='Поиск', width=10, command=lambda: self.search_users()).place(x=220, y=64)
+        tk.Button(text='Очистить', width=10, command=lambda: self.clear_search()).place(x=310, y=64)
+
         # ==============================================================================================================
         #                                    ОТОБРАЖЕНИЕ ДАННЫХ 'ИТОГО'
         # ==============================================================================================================
@@ -73,7 +86,7 @@ class Main(tk.Frame):
 
         # Выпадающий спиок месяцев
         self.combobox_month = ttk.Combobox(values=MONTH, width=10, state='readonly')
-        self.combobox_month.bind("<<ComboboxSelected>>", lambda event: self.callback())
+        self.combobox_month.bind("<<ComboboxSelected>>", lambda event: self.update_label_total_goods_per_month())
         self.combobox_month.current(0)
         self.combobox_month.place(x=215, y=557)
 
@@ -81,7 +94,7 @@ class Main(tk.Frame):
         #                                        ТАБЛИЦА ПОЛЬЗОВАТЕЛЕЙ (СЛЕВА)
         # ==============================================================================================================
         frame_users = tk.Frame()
-        frame_users.place(x=20, y=80)
+        frame_users.place(x=20, y=95)
 
         self.table_users = ttk.Treeview(frame_users, columns=('ID', 'last_name', 'first_name', 'birthday'),
                                         height=15, show='headings', selectmode='extended')
@@ -107,15 +120,15 @@ class Main(tk.Frame):
         # ==============================================================================================================
         # Добавить
         self.add_img = tk.PhotoImage(file='image/add.png')  # Allowed PPM, PNG, JPEG, GIF, TIFF and BMP.
-        tk.Button(image=self.add_img, command=lambda: app_manager.display_add_user_window(), bd=0).place(x=15, y=420)
+        tk.Button(image=self.add_img, command=lambda: app_manager.display_add_user_window(), bd=0).place(x=15, y=430)
 
         # Редактировать
         self.edit_img = tk.PhotoImage(file='image/edit.png')
-        tk.Button(image=self.edit_img, command=lambda: app_manager.display_edit_user_window(), bd=0).place(x=172, y=420)
+        tk.Button(image=self.edit_img, command=lambda: app_manager.display_edit_user_window(), bd=0).place(x=172, y=430)
 
         # Удалить
         self.delete_img = tk.PhotoImage(file='image/delete.png')
-        tk.Button(image=self.delete_img, command=lambda: app_manager.delete_user_from_db(), bd=0).place(x=330, y=420)
+        tk.Button(image=self.delete_img, command=lambda: app_manager.delete_user_from_db(), bd=0).place(x=330, y=430)
 
         # Иконка кнопки 'Отмена'
         self.cancel_img = tk.PhotoImage(file='image/cancel.png')
@@ -124,7 +137,7 @@ class Main(tk.Frame):
         #                                        ТАБЛИЦА ТОВАРОВ (СПРАВА)
         # ==============================================================================================================
         frame_goods = tk.Frame()
-        frame_goods.place(x=650, y=80)
+        frame_goods.place(x=650, y=95)
 
         self.table_goods = ttk.Treeview(frame_goods, columns=('ID', 'user_id', 'month', 'goods'),
                                         height=12, show='headings', selectmode='browse')
@@ -145,11 +158,11 @@ class Main(tk.Frame):
         # ==============================================================================================================
         # Добавить
         btn_add_goods = tk.Button(image=self.add_img, command=lambda: app_manager.display_add_goods_window(), bd=0)
-        btn_add_goods.place(x=652, y=360)
+        btn_add_goods.place(x=652, y=370)
 
         # Редактировать
         btn_edit_goods = tk.Button(image=self.edit_img, command=lambda: app_manager.display_edit_goods_window(), bd=0)
-        btn_edit_goods.place(x=810, y=360)
+        btn_edit_goods.place(x=810, y=370)
 
         # ==============================================================================================================
         #                                          КНОПКИ МЕЖДУ ТАБЛИЦАМИ
@@ -181,20 +194,20 @@ class Main(tk.Frame):
 
         # 'Редактировать'
         edit_menu = tk.Menu(self.menu_bar, tearoff=0)
-        edit_menu.add_command(label='Добавить клиента', command=lambda: self.display_add_user_window())
-        edit_menu.add_command(label='Добавить товар', command=lambda: self.display_add_goods_window())
+        edit_menu.add_command(label='Добавить клиента', command=lambda: app_manager.display_add_user_window())
+        edit_menu.add_command(label='Добавить товар', command=lambda: app_manager.display_add_goods_window())
 
         # Конструируем подменю меню 'Редактировать'
         edit_choice = tk.Menu(edit_menu, tearoff=0)
-        edit_choice.add_command(label='Данные клиента', command=lambda: self.display_edit_user_window())
-        edit_choice.add_command(label='Количество товара', command=lambda: self.display_edit_goods_window())
+        edit_choice.add_command(label='Данные клиента', command=lambda: app_manager.display_edit_user_window())
+        edit_choice.add_command(label='Количество товара', command=lambda: app_manager.display_edit_goods_window())
         edit_menu.add_cascade(label='Редактировать', menu=edit_choice)
         self.menu_bar.add_cascade(label='Редактировать', menu=edit_menu)
 
         # 'График'
         graphic_menu = tk.Menu(self.menu_bar, tearoff=0)
-        graphic_menu.add_command(label='График товаров', command=lambda: self.display_graphic())
-        graphic_menu.add_command(label='Диаграмма товаров', command=lambda: self.display_diagram())
+        graphic_menu.add_command(label='График товаров', command=lambda: app_manager.display_graphic())
+        graphic_menu.add_command(label='Диаграмма товаров', command=lambda: app_manager.display_diagram())
         self.menu_bar.add_cascade(label='График', menu=graphic_menu)
 
         # 'Справка'
@@ -205,19 +218,19 @@ class Main(tk.Frame):
     # ==================================================================================================================
     #                                              ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
     # ==================================================================================================================
-    # Метод для проверки поля ввода количества товара
-    @staticmethod
-    def is_int(string):
-        if string != '':
-            if string[0] in ('-', '+'):
-                return string[1:].isdigit()
-            return string.isdigit()
-
     # Сеттер для переменной состояния главного окна
     def set_main_window_state(self, user_id=None, user_name=None, is_display=None):
-        self.main_window_state['user_id'] = user_id
-        self.main_window_state['user_name'] = user_name
-        self.main_window_state['goods_visible'] = is_display
+        if user_id is not None:
+            self.main_window_state['user_id'] = user_id
+        if user_name is not None:
+            self.main_window_state['user_name'] = user_name
+        if is_display is not None:
+            self.main_window_state['goods_visible'] = is_display
+
+    def reset_main_window_state(self):
+        self.main_window_state['user_id'] = ''
+        self.main_window_state['user_name'] = []
+        self.main_window_state['goods_visible'] = False
 
     # Получаем данные из выделенных пользователем строк в таблице User (слева)
     def get_data_from_user_selection(self) -> list:  # List of dicts
@@ -256,13 +269,26 @@ class Main(tk.Frame):
             result.append(int(self.get_goods_amount(user_id, MONTH[index])))
         return result
 
+    # Поиск по имени и отображение таблицы с найденными именами
+    def search_users(self):
+        search_string = self.search_entry.get()
+        search_string = search_string.lower()
+        founded_users = []  # Список найденных пользователей
+        if search_string.isalpha():
+            for user in self.db.session.query(User).filter().all():
+                if search_string in user.first_name.lower() or search_string in user.last_name.lower():
+                    founded_users.append(user)
+        if len(founded_users) != 0:
+            self.display_founded_users_table(founded_users)
+
+    # Очистка поля ввода в поиске и возврат к исходному состоянию таблицы = отображение всех клиентов из базы
+    def clear_search(self):
+        self.search_entry.delete(0, 'end')
+        self.display_all_users_table()
+
     # ==================================================================================================================
     #                                          ФУНКЦИИ ОБНОВЛЕНИЯ ДАННЫХ 'ИТОГО'
     # ==================================================================================================================
-    # Реакция на выбор месяца для вывода 'ИТОГО'
-    def callback(self):
-        self.update_label_total_goods_per_month()
-
     # Метод для обновления текста метки с информацией о кол-ве клиентов
     def update_label_total_user_info(self):
         self.label_total_user_info.config(text=len(self.db.session.query(User).filter().all()))
@@ -281,15 +307,20 @@ class Main(tk.Frame):
     # ==================================================================================================================
     #                                             ФУНКЦИИ ДЛЯ ОТОБРАЖЕНИЯ ТАБЛИЦ
     # ==================================================================================================================
-    def display_table_users(self):
+    def display_all_users_table(self):
         [self.table_users.delete(i) for i in self.table_users.get_children()]
         [self.table_users.insert('', 'end', values=(user.id, user.last_name, user.first_name, user.birthday))
          for user in self.db.session.query(User).filter().all()]
 
-    def display_table_user_goods(self, user_id: str):
+    def display_user_goods_table(self, user_id: str):
         [self.table_goods.delete(i) for i in self.table_goods.get_children()]
         [self.table_goods.insert('', 'end', values=(goods.id, goods.user_id, goods.month, goods.goods))
          for goods in self.db.session.query(Goods).filter(Goods.user_id == user_id).all()]
+
+    def display_founded_users_table(self, users: list):
+        [self.table_users.delete(i) for i in self.table_users.get_children()]
+        [self.table_users.insert('', 'end', values=(user.id, user.last_name, user.first_name, user.birthday))
+         for user in users]
 
 
 if __name__ == "__main__":

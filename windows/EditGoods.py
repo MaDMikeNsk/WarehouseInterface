@@ -50,5 +50,5 @@ class EditGoods(AddGoods):
                                           month=self.combobox_month.get(),
                                           goods=int(goods_amount))
             self.main_app.update_label_total_goods_per_month()
-            self.main_app.display_table_user_goods(self.main_app.main_window_state['user_id'])
+            self.main_app.display_user_goods_table(self.main_app.main_window_state['user_id'])
             self.destroy()

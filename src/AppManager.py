@@ -77,7 +77,7 @@ class AppManager:
     def on_click_arrow_button(self):
         if len(self.main_app.table_users.selection()) == 1:
             selected_user = self.main_app.get_data_from_user_selection()[0]
-            self.main_app.display_table_user_goods(selected_user['user_id'])
+            self.main_app.display_user_goods_table(selected_user['user_id'])
             self.main_app.set_main_window_state(user_id=selected_user['user_id'],
                                                 user_name=selected_user['user_name'],
                                                 is_display=True)
@@ -99,10 +99,10 @@ class AppManager:
                 # сбрасываем параметры main_window_state, скрываем метку с именем отображаемого клиента
                 if self.main_app.main_window_state['user_id'] == user['user_id']:
                     [self.main_app.table_goods.delete(i) for i in self.main_app.table_goods.get_children()]
-                    self.main_app.set_main_window_state()  # Обнуляем состояние преременной main_window_state
+                    self.main_app.reset_main_window_state()  # Обнуляем состояние преременной main_window_state
                     self.main_app.label_current_displayed_user.config(text='')
 
             # Пересчитываем параметры 'ИТОГО' и выводим обновлённую таблицу пользователей
             self.main_app.update_label_total_user_info()
             self.main_app.update_label_total_goods_per_month()
-            self.main_app.display_table_users()
+            self.main_app.display_all_users_table()

@@ -23,14 +23,14 @@ class AddUser(tk.Toplevel):
         self.init_window()
         self.grab_set()  # Установить фокус на этом окне
 
+    # ==============================================================================================================
+    #                                          ГРАФИЧЕСКИЙ ИНТЕРФЕЙС
+    # ==============================================================================================================
     def init_window(self):
         self.title('Добавить клиента...')
         self.geometry('360x170+400+400')
         self.resizable(False, False)
 
-        # ==============================================================================================================
-        #                                          ГРАФИЧЕСКИЙ ИНТЕРФЕЙС
-        # ==============================================================================================================
         tk.Label(self, text='ИМЯ:').place(x=30, y=20)
         self.entry_first_name = tk.Entry(self, width=29)  # Поле ввода имени
         self.entry_first_name.place(x=150, y=20)
@@ -77,7 +77,7 @@ class AddUser(tk.Toplevel):
             user = User(user_last_name, user_first_name, birthday)
             self.main_app.db.record_user(user)
             # Перерисовываем таблицу пользователей, обновляем данные ИТОГО
-            self.main_app.display_table_users()
+            self.main_app.display_all_users_table()
             self.main_app.update_label_total_user_info()
             self.main_app.update_label_total_goods_per_month()
             self.destroy()
