@@ -227,9 +227,6 @@ class Main(tk.Frame):
         if is_display is not None:
             self.main_window_state['goods_visible'] = is_display
 
-    def reset_main_window_state(self):
-        self.set_main_window_state(user_id='', user_name=[], is_display=False)
-
     # Получаем данные из выделенных пользователем строк в таблице User (слева)
     def get_data_from_user_selection(self) -> list:  # List of dicts
         if self.table_users.selection() != ():
