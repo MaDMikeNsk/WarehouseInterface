@@ -63,7 +63,7 @@ class AddGoods(tk.Toplevel):
     def on_click(self):
         goods_amount = self.entry_goods.get()
         if goods_amount.isdigit():
-            # Если то, что ввели, является целым числом (со знаком или без), то вызываем функции из ГЛАВНОГО окна
+            # Если то, что ввели, является целым положительным числом , то вызываем функции из ГЛАВНОГО окна
             self.main_app.db.add_goods_for_this_month(user_id=self.main_app.main_window_state['user_id'],
                                                       month=self.combobox_month.get(),
                                                       goods=int(goods_amount))

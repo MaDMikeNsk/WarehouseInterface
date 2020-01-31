@@ -21,15 +21,9 @@ class Diagram(tk.Toplevel):
         k = len(data_to_display)
 
         month = MONTH_TWO_LETTERS
-        if k >= 3:
-            row = 2
-            column = 2
-        elif k == 2:
-            row = 1
-            column = 2
-        else:
-            row = 1
-            column = 1
+        row = 2 if k > 2 else 1
+        column = 1 if k == 1 else 2
+        if (row == 1) & (column == 1):
             month = MONTH_SHORT
 
         figure = plt.figure(dpi=90)
