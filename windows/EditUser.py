@@ -48,11 +48,14 @@ class EditUser(AddUser):
         birthday = self.combobox_days.get() + '/' + self.combobox_month.get() + '/' + self.combobox_year.get()
 
         # Если ввод не пустой, то редактируем запись в базе и обновляем таблицу
-        if first_name + last_name != '':
+        if (first_name != '') & (last_name != ''):
             self.main_app.db.update_user(user_id, first_name, last_name, birthday)
-            self.main_app.display_all_users_table()
+            for item in self.main_app.table_users.selection():
+                self.main_app.table_users.set(item, column="last_name", value=last_name)
+                self.main_app.table_users.set(item, column="first_name", value=first_name)
+                self.main_app.table_users.set(item, column="birthday", value=birthday)
 
-            # Если отображалась таблица для текущего клиента, то меняем метку с именем и
+            # Если отображалась таблица для текущего клиента, то меняем метку с именем
             if self.current_user_info['user_id'] == self.main_app.main_window_state['user_id']:
                 self.main_app.label_current_displayed_user.config(text=f"{first_name} {last_name}")
                 self.main_app.set_main_window_state(user_name=[first_name, last_name])
