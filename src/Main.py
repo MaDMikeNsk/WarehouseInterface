@@ -8,8 +8,8 @@ from windows.Diagram import Diagram
 from src.AppManager import AppManager
 
 DAYS = [x for x in range(1, 32)]
-MONTH = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-         'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
+MONTH_FULL = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+              'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь']
 MONTH_SHORT = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июнь',
                'Июль', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек']
 MONTH_TWO_LETTER = ['Ян', 'Фе', 'Мр', 'Ап', 'Мй', 'Ин', 'Ил', 'Ав', 'Се', 'Ок', 'Но', 'Де']
@@ -29,7 +29,8 @@ class Main(tk.Frame):
             self.label_total_user_info = \
             self.label_total_goods_per_month = \
             self.menu_bar = \
-            self.search_entry = None
+            self.search_entry = \
+            self.label_current_displayed_user = None
 
         self.add_img = \
             self.edit_img = \
@@ -37,8 +38,7 @@ class Main(tk.Frame):
             self.cancel_img = \
             self.arrow_image = \
             self.graphic_image = \
-            self.diagram_image = \
-            self.label_current_displayed_user = None
+            self.diagram_image = None
 
         self.main_window_state = {'user_id': '',
                                   'user_name': [],
@@ -85,7 +85,7 @@ class Main(tk.Frame):
         self.label_total_goods_per_month.place(x=310, y=550)
 
         # Выпадающий спиок месяцев
-        self.combobox_month = ttk.Combobox(values=MONTH, width=10, state='readonly')
+        self.combobox_month = ttk.Combobox(values=MONTH_FULL, width=10, state='readonly')
         self.combobox_month.bind("<<ComboboxSelected>>", lambda event: self.update_label_total_goods_per_month())
         self.combobox_month.current(0)
         self.combobox_month.place(x=215, y=557)
@@ -228,9 +228,7 @@ class Main(tk.Frame):
             self.main_window_state['goods_visible'] = is_display
 
     def reset_main_window_state(self):
-        self.main_window_state['user_id'] = ''
-        self.main_window_state['user_name'] = []
-        self.main_window_state['goods_visible'] = False
+        self.set_main_window_state(user_id='', user_name=[], is_display=False)
 
     # Получаем данные из выделенных пользователем строк в таблице User (слева)
     def get_data_from_user_selection(self) -> list:  # List of dicts
@@ -266,7 +264,7 @@ class Main(tk.Frame):
     def get_goods_values_of_user(self, user_id) -> list:
         result = []
         for index in range(12):
-            result.append(int(self.get_goods_amount(user_id, MONTH[index])))
+            result.append(int(self.get_goods_amount(user_id, MONTH_FULL[index])))
         return result
 
     # Поиск по имени и отображение таблицы с найденными именами

@@ -15,7 +15,7 @@ class AppManager:
         self.root = root
 
     # ==================================================================================================================
-    #                         РЕАКЦИЯ НА НАЖАТИЕ КНОПОК В ГЛАВНОМ ОКНЕ - ОТОБРАЖЕНИЕ ДОЧЕРНИХ ОКОН
+    #                       РЕАКЦИЯ НА НАЖАТИЕ КНОПОК В ГЛАВНОМ ОКНЕ = ОТОБРАЖЕНИЕ ДОЧЕРНИХ ОКОН
     # ==================================================================================================================
     # Кнопка 'Добавить' (под левой таблицей)
     def display_add_user_window(self):
@@ -96,13 +96,16 @@ class AppManager:
                 self.main_app.db.delete_goods(user['user_id'])
 
                 # Если отображалась таблица его товаров - удаляем её и
-                # сбрасываем параметры main_window_state, скрываем метку с именем отображаемого клиента
+                # сбрасываем параметры main_window_state
                 if self.main_app.main_window_state['user_id'] == user['user_id']:
                     [self.main_app.table_goods.delete(i) for i in self.main_app.table_goods.get_children()]
-                    self.main_app.reset_main_window_state()  # Обнуляем состояние преременной main_window_state
+                    # Обнуляем состояние преременной main_window_state
+                    self.main_app.set_main_window_state(user_id='', user_name=[], is_display=False)
+                    # ...и скрываем метку с именем отображаемого клиента
                     self.main_app.label_current_displayed_user.config(text='')
 
-            # Пересчитываем параметры 'ИТОГО' и выводим обновлённую таблицу пользователей
+            # Пересчитываем параметры 'ИТОГО' и удаляем записи из таблицы
             self.main_app.update_label_total_user_info()
             self.main_app.update_label_total_goods_per_month()
-            self.main_app.display_all_users_table()
+            for item in self.main_app.table_users.selection():
+                self.main_app.table_users.delete(item)
