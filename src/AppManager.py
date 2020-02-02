@@ -87,7 +87,7 @@ class AppManager:
     # Кнопка 'Удалить запись' (под левой таблицей)
     def delete_user_from_db(self):
         if len(self.main_app.table_users.selection()) > 0:
-            flag = mb.askquestion("Удаление", "Удалить запись из базы данных?", icon='warning')
+            flag = mb.askquestion("Удаление", "Удалить запись?", icon='warning')
             if flag == 'yes':
                 # Получаем ID пользователей, которых выбрали в таблице
                 selected_users = self.main_app.get_data_from_user_selection()
