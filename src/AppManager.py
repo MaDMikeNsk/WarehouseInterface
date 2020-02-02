@@ -81,31 +81,33 @@ class AppManager:
             self.main_app.set_main_window_state(user_id=selected_user['user_id'],
                                                 user_name=selected_user['user_name'],
                                                 is_display=True)
-            self.main_app.label_current_displayed_user.\
+            self.main_app.label_current_displayed_user. \
                 config(text=f"{selected_user['user_name'][0]} {selected_user['user_name'][1]}")
 
     # Кнопка 'Удалить запись' (под левой таблицей)
     def delete_user_from_db(self):
         if len(self.main_app.table_users.selection()) > 0:
-            # Получаем ID пользователей, которых выбрали в таблице
-            selected_users = self.main_app.get_data_from_user_selection()
+            flag = mb.askquestion("Удаление", "Удалить запись из базы данных?", icon='warning')
+            if flag == 'yes':
+                # Получаем ID пользователей, которых выбрали в таблице
+                selected_users = self.main_app.get_data_from_user_selection()
 
-            # Удаляем из базы пользователя и все записи из 2-й таблицы по его ID
-            for user in selected_users:
-                self.main_app.db.delete_user(user['user_id'])
-                self.main_app.db.delete_goods(user['user_id'])
+                # Удаляем из базы пользователя и все записи из 2-й таблицы по его ID
+                for user in selected_users:
+                    self.main_app.db.delete_user(user['user_id'])
+                    self.main_app.db.delete_goods(user['user_id'])
 
-                # Если отображалась таблица его товаров - удаляем её и
-                # сбрасываем параметры main_window_state
-                if self.main_app.main_window_state['user_id'] == user['user_id']:
-                    [self.main_app.table_goods.delete(i) for i in self.main_app.table_goods.get_children()]
-                    # Обнуляем состояние преременной main_window_state
-                    self.main_app.set_main_window_state(user_id='', user_name=[], is_display=False)
-                    # ...и скрываем метку с именем отображаемого клиента
-                    self.main_app.label_current_displayed_user.config(text='')
+                    # Если отображалась таблица его товаров - удаляем её и
+                    # сбрасываем параметры main_window_state
+                    if self.main_app.main_window_state['user_id'] == user['user_id']:
+                        [self.main_app.table_goods.delete(i) for i in self.main_app.table_goods.get_children()]
+                        # Обнуляем состояние преременной main_window_state
+                        self.main_app.set_main_window_state(user_id='', user_name=[], is_display=False)
+                        # ...и скрываем метку с именем отображаемого клиента
+                        self.main_app.label_current_displayed_user.config(text='')
 
-            # Пересчитываем параметры 'ИТОГО' и удаляем записи из таблицы
-            self.main_app.update_label_total_user_info()
-            self.main_app.update_label_total_goods_per_month()
-            for item in self.main_app.table_users.selection():
-                self.main_app.table_users.delete(item)
+                # Пересчитываем параметры 'ИТОГО' и удаляем записи из таблицы
+                self.main_app.update_label_total_user_info()
+                self.main_app.update_label_total_goods_per_month()
+                for item in self.main_app.table_users.selection():
+                    self.main_app.table_users.delete(item)

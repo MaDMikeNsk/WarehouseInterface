@@ -91,7 +91,7 @@ class Main(tk.Frame):
         self.combobox_month.place(x=215, y=557)
 
         # ==============================================================================================================
-        #                                        ТАБЛИЦА ПОЛЬЗОВАТЕЛЕЙ (СЛЕВА)
+        #                                        ТАБЛИЦА ПОЛЬЗОВАТЕЛЕЙ
         # ==============================================================================================================
         frame_users = tk.Frame()
         frame_users.place(x=20, y=95)
@@ -134,7 +134,7 @@ class Main(tk.Frame):
         self.cancel_img = tk.PhotoImage(file='image/cancel.png')
 
         # ==============================================================================================================
-        #                                        ТАБЛИЦА ТОВАРОВ (СПРАВА)
+        #                                              ТАБЛИЦА ТОВАРОВ
         # ==============================================================================================================
         frame_goods = tk.Frame()
         frame_goods.place(x=650, y=95)
@@ -154,7 +154,7 @@ class Main(tk.Frame):
         self.table_goods.pack(side='left')
 
         # ==============================================================================================================
-        #                                        КНОПКИ ПОД ТАБЛИЦЕЙ ТОВАРОВ
+        #                                         КНОПКИ ПОД ТАБЛИЦЕЙ ТОВАРОВ
         # ==============================================================================================================
         # Добавить
         btn_add_goods = tk.Button(image=self.add_img, command=lambda: app_manager.display_add_goods_window(), bd=0)
@@ -165,7 +165,7 @@ class Main(tk.Frame):
         btn_edit_goods.place(x=810, y=370)
 
         # ==============================================================================================================
-        #                                          КНОПКИ МЕЖДУ ТАБЛИЦАМИ
+        #                                            КНОПКИ МЕЖДУ ТАБЛИЦАМИ
         # ==============================================================================================================
         # Arrow
         self.arrow_image = tk.PhotoImage(file='image/arrow.png')
@@ -180,7 +180,7 @@ class Main(tk.Frame):
         tk.Button(image=self.diagram_image, bd=0, command=lambda: app_manager.display_diagram()).place(x=530, y=310)
 
         # ==============================================================================================================
-        #                                            КОНСТРУИРУЕМ 'МЕНЮ'
+        #                                             КОНСТРУИРУЕМ 'МЕНЮ'
         # ==============================================================================================================
         self.menu_bar = tk.Menu(self.root)
         self.root.config(menu=self.menu_bar)
@@ -274,7 +274,7 @@ class Main(tk.Frame):
                 if search_string in user.first_name.lower() or search_string in user.last_name.lower():
                     founded_users.append(user)
         if len(founded_users) != 0:
-            self.display_founded_users_table(founded_users)
+            self.display_fixed_users_table(founded_users)
 
     # Очистка поля ввода в поиске и возврат к исходному состоянию таблицы = отображение всех клиентов из базы
     def clear_search(self):
@@ -312,7 +312,7 @@ class Main(tk.Frame):
         [self.table_goods.insert('', 'end', values=(goods.id, goods.user_id, goods.month, goods.goods))
          for goods in self.db.session.query(Goods).filter(Goods.user_id == user_id).all()]
 
-    def display_founded_users_table(self, users: list):
+    def display_fixed_users_table(self, users: list):
         [self.table_users.delete(i) for i in self.table_users.get_children()]
         [self.table_users.insert('', 'end', values=(user.id, user.last_name, user.first_name, user.birthday))
          for user in users]
